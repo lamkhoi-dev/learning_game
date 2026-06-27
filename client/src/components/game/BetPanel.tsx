@@ -12,7 +12,7 @@ interface Props {
   onBet: (amount: string) => Promise<void>
 }
 
-const QUICK_AMOUNTS = [5, 10, 20, 50, 100, 500]
+const QUICK_AMOUNTS = [2, 5, 10, 20, 50, 100]
 
 export function BetPanel({ roundId: _roundId, choice, userEnergy, disabled, onBet }: Props) {
   const [amount, setAmount] = useState('')
