@@ -1,0 +1,11 @@
+# Caddy tự cấp & gia hạn SSL (Let's Encrypt) cho domain.
+# {$SITE_DOMAIN} lấy từ biến môi trường trong docker-compose.
+
+{$SITE_DOMAIN} {
+	encode gzip
+	reverse_proxy server:4000
+}
+
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}

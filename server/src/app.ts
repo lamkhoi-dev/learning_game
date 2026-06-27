@@ -22,6 +22,9 @@ export const nextProxy = createProxyMiddleware({
 export function createApp() {
   const app = express()
 
+  // Sau reverse proxy (Caddy) → tin XFF để lấy IP thật cho rate-limit
+  if (process.env.TRUST_PROXY === 'true') app.set('trust proxy', 1)
+
   const allowedOrigins = (process.env.CLIENT_ORIGIN ?? 'http://localhost:3000')
     .split(',').map(s => s.trim())
 
