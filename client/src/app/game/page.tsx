@@ -296,9 +296,11 @@ export default function GamePage() {
             disabled={!canBet || !selectedChoice}
             onBet={handleBet}
           />
-          <p className="text-[10px] text-[var(--text-muted)] mt-2 text-center">
-            Hủy từng lệnh ở danh sách bên dưới (nút HỦY)
-          </p>
+          {isAdmin && (
+            <p className="text-[10px] text-[var(--text-muted)] mt-2 text-center">
+              (Admin) Hủy từng lệnh ở danh sách bên dưới
+            </p>
+          )}
         </div>
 
         {/* ── 2 cột live + tổng chíp ── */}
@@ -311,7 +313,7 @@ export default function GamePage() {
             bets={bets}
             currentUserId={user?.id ?? ''}
             isAdmin={isAdmin}
-            canCancel={canCancel}
+            canCancel={isAdmin && canCancel}
             cancellingId={cancellingId}
             onCancel={handleCancelFromFeed}
           />
