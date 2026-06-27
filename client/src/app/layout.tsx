@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://an1307.vn'
-const TITLE = 'An1307 — Tài Xỉu'
-const DESC = 'Sản phẩm giải trí & giáo dục. Chọn ₮ hoặc Ӿ, đặt chíp ảo theo thời gian thực.'
+const TITLE = 'An1307'
+const DESC = 'Sản phẩm giải trí & giáo dục.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
