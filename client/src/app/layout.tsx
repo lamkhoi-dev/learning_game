@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     siteName: 'An1307',
     title: TITLE,
     description: DESC,
-    images: [{ url: '/logo.jpg', width: 1200, height: 630, alt: 'An1307' }],
+    images: [{ url: '/logo.jpg', width: 1152, height: 922, alt: 'An1307' }],
   },
   twitter: {
     card: 'summary_large_image',
