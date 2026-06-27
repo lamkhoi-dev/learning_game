@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.local
+.next/
+*.log
+.DS_Store
+
+# ảnh nguồn tạm ở gốc
+/*.jpg
+/*.png
+/*.jpeg

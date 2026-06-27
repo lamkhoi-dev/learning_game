@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg-void: #0a0a08;
+  --bg-surface: #12110c;
+  --bg-card: #17150e;
+  --gold: #ffd24a;
+  --gold-dim: #c79a2e;
+  --cyan-titan: #00f5ff;
+  --cyan-dim: #00b8c4;
+  --crimson-xenon: #ff1744;
+  --crimson-dim: #c41230;
+  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-border: rgba(255, 210, 74, 0.14);
+  --text-primary: #f3ede0;
+  --text-muted: #a39a83;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Animations ── */
+
+@keyframes glow-pulse-cyan {
+  0%, 100% { box-shadow: 0 0 12px rgba(0, 245, 255, 0.3), 0 0 24px rgba(0, 245, 255, 0.1); }
+  50%       { box-shadow: 0 0 24px rgba(0, 245, 255, 0.6), 0 0 48px rgba(0, 245, 255, 0.2); }
+}
+
+@keyframes glow-pulse-crimson {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 23, 68, 0.3), 0 0 24px rgba(255, 23, 68, 0.1); }
+  50%       { box-shadow: 0 0 24px rgba(255, 23, 68, 0.6), 0 0 48px rgba(255, 23, 68, 0.2); }
+}
+
+@keyframes screen-shake {
+  0%, 100% { transform: translateX(0); }
+  10%       { transform: translateX(-6px) rotate(-0.5deg); }
+  20%       { transform: translateX(6px) rotate(0.5deg); }
+  30%       { transform: translateX(-4px); }
+  40%       { transform: translateX(4px); }
+  50%       { transform: translateX(-2px); }
+  60%       { transform: translateX(2px); }
+  70%       { transform: translateX(-1px); }
+  80%       { transform: translateX(1px); }
+}
+
+@keyframes float-up {
+  0%   { transform: translateY(0) scale(1); opacity: 0.6; }
+  100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+}
+
+@keyframes scan-line {
+  0%   { top: -10%; }
+  100% { top: 110%; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes win-flash-cyan {
+  0%        { background: rgba(0, 245, 255, 0.3); }
+  30%       { background: rgba(0, 245, 255, 0.15); }
+  100%      { background: rgba(0, 0, 0, 0.85); }
+}
+
+@keyframes lose-flash-crimson {
+  0%        { background: rgba(255, 23, 68, 0.3); }
+  30%       { background: rgba(255, 23, 68, 0.15); }
+  100%      { background: rgba(0, 0, 0, 0.85); }
+}
+
+@keyframes text-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 24%, 55%                           { opacity: 0.5; }
+}
+
+@keyframes counter-bounce {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* ── Utility classes ── */
+
+.font-orbitron { font-family: 'Orbitron', monospace; }
+
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+}
+
+.neon-text-gold {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(255, 210, 74, 0.5), 0 0 18px rgba(255, 210, 74, 0.25);
+}
+
+@keyframes glow-pulse-gold {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 210, 74, 0.3), 0 0 24px rgba(255, 210, 74, 0.1); }
+  50%       { box-shadow: 0 0 24px rgba(255, 210, 74, 0.55), 0 0 48px rgba(255, 210, 74, 0.2); }
+}
+
+.neon-text-cyan {
+  color: var(--cyan-titan);
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.6), 0 0 16px rgba(0, 245, 255, 0.3);
+}
+
+.neon-text-crimson {
+  color: var(--crimson-xenon);
+  text-shadow: 0 0 8px rgba(255, 23, 68, 0.6), 0 0 16px rgba(255, 23, 68, 0.3);
+}
+
+.card-cyan-selected {
+  animation: glow-pulse-cyan 2s ease-in-out infinite;
+  border-color: var(--cyan-titan) !important;
+}
+
+.card-crimson-selected {
+  animation: glow-pulse-crimson 2s ease-in-out infinite;
+  border-color: var(--crimson-xenon) !important;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease forwards;
+}
+
+.animate-shake {
+  animation: screen-shake 0.5s ease;
+}
+
+/* Background grid */
+.void-grid {
+  background-image:
+    linear-gradient(rgba(255, 210, 74, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 210, 74, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb { background: rgba(255, 210, 74, 0.25); border-radius: 2px; }

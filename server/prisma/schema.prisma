@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  phone        String     @unique
+  passwordHash String
+  energy       BigInt     @default(0)
+  role         Role       @default(USER)
+  status       UserStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  bets         Bet[]
+  auditLogs    AuditLog[] @relation("AdminLogs")
+  rounds       Round[]    @relation("CreatedRounds")
+}
+
+model Round {
+  id          String      @id @default(cuid())
+  status      RoundStatus @default(WAITING)
+  coefficient Decimal     @db.Decimal(10, 2)
+  result      Choice?
+  createdById String
+  createdBy   User        @relation("CreatedRounds", fields: [createdById], references: [id])
+  createdAt   DateTime    @default(now())
+  openedAt    DateTime?
+  lockedAt    DateTime?
+  resultAt    DateTime?
+  bets        Bet[]
+}
+
+model Bet {
+  id        String    @id @default(cuid())
+  userId    String
+  roundId   String
+  choice    Choice
+  amount    BigInt
+  status    BetStatus @default(PENDING)
+  payout    BigInt    @default(0)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  round     Round     @relation(fields: [roundId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation("AdminLogs", fields: [adminId], references: [id])
+  action     String
+  entityType String?
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+model Settings {
+  id        String   @id @default("singleton")
+  brandName String   @default("VOID PROTOCOL")
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+}
+
+enum RoundStatus {
+  WAITING
+  OPEN
+  LOCKED
+  RESULT
+}
+
+enum Choice {
+  T
+  X
+}
+
+enum BetStatus {
+  PENDING
+  WIN
+  LOSE
+}
