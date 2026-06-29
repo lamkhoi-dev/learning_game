@@ -16,6 +16,7 @@ export interface User {
 export interface Round {
   id: string
   status: RoundStatus
+  paused?: boolean
   coefficient: string
   result: Choice | null
   createdById: string

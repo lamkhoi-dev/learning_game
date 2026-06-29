@@ -24,6 +24,7 @@ model User {
 model Round {
   id          String      @id @default(cuid())
   status      RoundStatus @default(WAITING)
+  paused      Boolean     @default(false)
   coefficient Decimal     @db.Decimal(10, 2)
   result      Choice?
   createdById String

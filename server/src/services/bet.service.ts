@@ -5,6 +5,7 @@ export async function placeBet(userId: string, roundId: string, choice: Choice, 
   const round = await prisma.round.findUnique({ where: { id: roundId } })
   if (!round) throw new Error('Round not found')
   if (round.status !== 'OPEN') throw new Error('Betting is not open')
+  if (round.paused) throw new Error('Phòng đang tạm khóa')
 
   // Cho phép đặt nhiều lệnh / cả 2 bên trong cùng 1 phiên (không chặn lệnh trùng)
   const user = await prisma.user.findUnique({ where: { id: userId } })

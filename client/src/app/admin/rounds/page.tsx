@@ -114,6 +114,18 @@ export default function RoundsPage() {
     }
   }, [socket, activeRound?.id])
 
+  async function togglePause(paused: boolean) {
+    if (!activeRound) return
+    setLoading(true)
+    try {
+      const { data } = await api.put(`/api/admin/rounds/${activeRound.id}/pause`, { paused })
+      setActiveRound(data)
+      flash(paused ? 'Đã khóa phòng — ngừng nhận cược' : 'Đã mở lại phòng — tiếp tục nhận cược')
+    } catch (err: unknown) {
+      flash((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Thất bại', false)
+    } finally { setLoading(false) }
+  }
+
   async function createRound() {
     setLoading(true)
     try {
@@ -217,6 +229,28 @@ export default function RoundsPage() {
               </div>
             )}
           </div>
+
+          {/* Khóa/Mở phòng tạm thời */}
+          {activeRound.status === 'OPEN' && (
+            <div className="flex items-center gap-3 flex-wrap p-3 rounded-lg" style={{
+              background: activeRound.paused ? 'rgba(255,23,68,0.08)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${activeRound.paused ? 'rgba(255,23,68,0.3)' : 'var(--glass-border)'}`,
+            }}>
+              <span className="text-sm font-orbitron" style={{ color: activeRound.paused ? 'var(--crimson-xenon)' : 'var(--text-muted)' }}>
+                {activeRound.paused ? '⏸ PHÒNG ĐANG TẠM KHÓA' : '● Đang nhận cược'}
+              </span>
+              <button
+                onClick={() => togglePause(!activeRound.paused)}
+                disabled={loading}
+                className="ml-auto font-orbitron text-xs px-4 py-2 rounded-lg tracking-widest disabled:opacity-40 transition-all"
+                style={activeRound.paused
+                  ? { background: 'var(--gold)', color: '#000', boxShadow: '0 0 12px rgba(255,210,74,0.3)' }
+                  : { border: '1px solid var(--crimson-xenon)', color: 'var(--crimson-xenon)' }}
+              >
+                {loading ? '...' : activeRound.paused ? '▶ MỞ LẠI PHÒNG' : '⏸ KHÓA PHÒNG'}
+              </button>
+            </div>
+          )}
 
           {/* OPEN → chọn kết quả & khoá */}
           {activeRound.status === 'OPEN' && (

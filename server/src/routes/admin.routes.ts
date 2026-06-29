@@ -122,6 +122,34 @@ router.put('/bets/:betId', async (req: AuthRequest, res: Response): Promise<void
   }
 })
 
+// Khóa / mở phòng tạm thời (ngừng/tiếp tục nhận cược)
+router.put('/rounds/:id/pause', async (req: AuthRequest, res: Response): Promise<void> => {
+  const schema = z.object({ paused: z.boolean() })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: 'Tham số không hợp lệ' }); return }
+  try {
+    const round = await prisma.round.findUnique({ where: { id: req.params.id } })
+    if (!round) { res.status(404).json({ error: 'Không tìm thấy phiên' }); return }
+    if (round.status !== 'OPEN') { res.status(400).json({ error: 'Chỉ khóa/mở khi phiên đang mở' }); return }
+
+    const updated = await prisma.round.update({
+      where: { id: req.params.id },
+      data: { paused: parsed.data.paused },
+    })
+    emitRoundState({ ...updated, coefficient: updated.coefficient.toString() })
+    await writeAudit({
+      adminId: req.user!.userId,
+      action: parsed.data.paused ? 'ROUND_PAUSED' : 'ROUND_RESUMED',
+      entityType: 'Round',
+      entityId: req.params.id,
+      ipAddress: getIp(req),
+    })
+    res.json({ ...updated, coefficient: updated.coefficient.toString() })
+  } catch (err: unknown) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
+  }
+})
+
 // Chỉnh hệ số của phiên đang mở
 router.put('/rounds/:id/coefficient', async (req: AuthRequest, res: Response): Promise<void> => {
   const schema = z.object({ coefficient: z.number().positive() })

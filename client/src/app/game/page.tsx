@@ -158,7 +158,7 @@ export default function GamePage() {
     }
   }, [isAdmin, socket, user?.id])
 
-  const canBet = round?.status === 'OPEN'
+  const canBet = round?.status === 'OPEN' && !round?.paused
   const canCancel = round?.status === 'OPEN'
 
   if (booting) {
@@ -214,8 +214,12 @@ export default function GamePage() {
         {/* ── Thanh trạng thái phiên ── */}
         <div className="glass-panel p-4 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <p className="font-orbitron text-sm font-bold tracking-widest neon-text-gold">
-              {round?.status === 'OPEN' ? 'PHIÊN ĐANG MỞ — ĐẶT CƯỢC' : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...' : round?.status === 'RESULT' ? 'PHIÊN ĐÃ KẾT THÚC' : 'CHỜ BẮT ĐẦU PHIÊN MỚI'}
+            <p className="font-orbitron text-sm font-bold tracking-widest" style={{ color: round?.paused ? 'var(--crimson-xenon)' : 'var(--gold)', textShadow: round?.paused ? '0 0 8px rgba(255,23,68,0.5)' : '0 0 8px rgba(255,210,74,0.5)' }}>
+              {round?.paused ? '⏸ PHÒNG TẠM KHÓA — NGỪNG NHẬN CƯỢC'
+                : round?.status === 'OPEN' ? 'PHIÊN ĐANG MỞ — ĐẶT CƯỢC'
+                : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...'
+                : round?.status === 'RESULT' ? 'PHIÊN ĐÃ KẾT THÚC'
+                : 'CHỜ BẮT ĐẦU PHIÊN MỚI'}
             </p>
             {round && <p className="text-xs text-[var(--text-muted)] mt-0.5">Phiên #{round.id.slice(-6).toUpperCase()}</p>}
             <div className="flex items-center gap-3 mt-1.5">
@@ -277,6 +281,7 @@ export default function GamePage() {
             <p className="text-xs font-orbitron tracking-widest" style={{ color: canBet ? 'var(--text-muted)' : 'var(--text-muted)' }}>
               {canBet
                 ? selectedChoice ? `ĐANG CHỌN ${displayChoice(selectedChoice)} — NHẬP SỐ CHÍP` : 'CHỌN ₮ HOẶC Ӿ RỒI ĐẶT (ĐẶT NHIỀU LẦN, CẢ 2 BÊN)'
+                : round?.paused ? '⏸ PHÒNG TẠM KHÓA — VUI LÒNG CHỜ'
                 : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...'
                 : 'CHƯA THỂ ĐẶT CƯỢC'}
             </p>
