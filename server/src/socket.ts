@@ -1,11 +1,43 @@
 import { Server as HttpServer } from 'http'
 import { Server, Socket } from 'socket.io'
+import { randomUUID } from 'crypto'
 import { verifyAccessToken } from './lib/jwt'
 import { placeBet, cancelBet } from './services/bet.service'
 import { prisma } from './lib/prisma'
 import { Choice } from '@prisma/client'
 
 let io: Server
+
+// ── Bet đã tạo (từ placeBet) → phát cho tất cả (dùng chung người thật + bot) ──
+type CreatedBet = {
+  id: string; userId: string; roundId: string; choice: Choice; amount: bigint; createdAt: Date
+  user: { username: string }
+}
+export function broadcastNewBet(bet: CreatedBet): void {
+  io?.emit('bet:feed', {
+    betId: bet.id,
+    userId: bet.userId,
+    username: bet.user.username,
+    choice: bet.choice,
+    amount: bet.amount.toString(),
+    createdAt: bet.createdAt,
+    roundId: bet.roundId,
+  })
+  void emitStats()
+}
+
+// ── Chat trực tiếp (tạm thời, giữ trong RAM ~50 tin gần nhất) ──
+interface ChatMsg { id: string; userId: string; username: string; text: string; createdAt: string }
+const chatBuffer: ChatMsg[] = []
+const CHAT_MAX = 50
+const lastChatAt = new Map<string, number>()
+
+export function pushChat(username: string, text: string, userId = ''): void {
+  const msg: ChatMsg = { id: randomUUID(), userId, username, text, createdAt: new Date().toISOString() }
+  chatBuffer.push(msg)
+  if (chatBuffer.length > CHAT_MAX) chatBuffer.shift()
+  io?.emit('chat:message', msg)
+}
 
 // Đếm user online (mỗi userId có thể mở nhiều tab → đếm số kết nối)
 const onlineUsers = new Map<string, number>()
@@ -58,6 +90,33 @@ export function initSocket(httpServer: HttpServer): Server {
     onlineUsers.set(userId, (onlineUsers.get(userId) ?? 0) + 1)
     void emitStats()
 
+    // Gửi lịch sử chat gần đây cho người vừa vào
+    socket.emit('chat:history', chatBuffer)
+
+    socket.on('chat:send', async ({ text }: { text: string }) => {
+      try {
+        const t = (text || '').trim()
+        if (!t) return
+        const now = Date.now()
+        if (now - (lastChatAt.get(userId) ?? 0) < 1500) {
+          socket.emit('chat:error', { error: 'Gửi chậm lại một chút' }); return
+        }
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { status: true, username: true } })
+        if (!user || user.status !== 'ACTIVE') {
+          socket.emit('chat:error', { error: 'Tài khoản chưa được duyệt' }); return
+        }
+        lastChatAt.set(userId, now)
+        pushChat(user.username, t.slice(0, 200), userId)
+      } catch { /* bỏ qua */ }
+    })
+
+    socket.on('chat:delete', ({ id }: { id: string }) => {
+      if (socket.data.role !== 'ADMIN') return
+      const idx = chatBuffer.findIndex(m => m.id === id)
+      if (idx >= 0) chatBuffer.splice(idx, 1)
+      io.emit('chat:remove', { id })
+    })
+
     socket.on('bet:place', async (data: { roundId: string; choice: string; amount: string }) => {
       try {
         // Check user status
@@ -82,16 +141,7 @@ export function initSocket(httpServer: HttpServer): Server {
 
         socket.emit('bet:confirmed', { choice: bet.choice, amount: bet.amount.toString() })
 
-        io.emit('bet:feed', {
-          betId: bet.id,
-          userId: userId,
-          username: (bet as unknown as { user: { username: string } }).user.username,
-          choice: bet.choice,
-          amount: bet.amount.toString(),
-          createdAt: bet.createdAt,
-          roundId: data.roundId,
-        })
-        void emitStats()
+        broadcastNewBet(bet as unknown as CreatedBet)
       } catch (err: unknown) {
         socket.emit('bet:error', { error: err instanceof Error ? err.message : 'Đặt cược thất bại' })
       }

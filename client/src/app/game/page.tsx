@@ -5,11 +5,13 @@ import { useAuthStore } from '@/store/authStore'
 import { useSocket } from '@/hooks/useSocket'
 import { useRound } from '@/hooks/useRound'
 import { useRoundBets } from '@/hooks/useRoundBets'
-import { useBrand } from '@/hooks/useBrand'
+import { useSettings } from '@/hooks/useSettings'
 import { useStats } from '@/hooks/useStats'
 import { ChoiceCard } from '@/components/game/ChoiceCard'
 import { BetPanel } from '@/components/game/BetPanel'
 import { TwoColumnFeed } from '@/components/game/TwoColumnFeed'
+import { LivePlayer } from '@/components/game/LivePlayer'
+import { ChatWidget } from '@/components/game/ChatWidget'
 import { WinOverlay } from '@/components/game/WinOverlay'
 import { LoseOverlay } from '@/components/game/LoseOverlay'
 import { CountdownOverlay } from '@/components/game/CountdownOverlay'
@@ -23,7 +25,8 @@ export default function GamePage() {
   const [booting, setBooting] = useState(!accessToken)
   const { socket, connected } = useSocket()
   const { round } = useRound()
-  const brandName = useBrand()
+  const settings = useSettings()
+  const brandName = settings.brandName
   const { bets } = useRoundBets(round?.id)
   const onlineStats = useStats()
 
@@ -209,7 +212,18 @@ export default function GamePage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-5 flex flex-col gap-4">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-5">
+       <div className="flex flex-col lg:flex-row gap-4 lg:items-start lg:justify-center">
+
+        {/* ── Cột trái: video live ── */}
+        {settings.streamOn && (
+          <div className="w-full lg:flex-1 lg:min-w-0 lg:sticky lg:top-[76px]">
+            <LivePlayer url={settings.streamUrl} type={settings.streamType} on={settings.streamOn} />
+          </div>
+        )}
+
+        {/* ── Cột phải: khu chơi ── */}
+        <div className={`w-full flex flex-col gap-4 ${settings.streamOn ? 'lg:max-w-[460px]' : 'max-w-3xl mx-auto'}`}>
 
         {/* ── Thanh trạng thái phiên ── */}
         <div className="glass-panel p-4 flex items-center justify-between flex-wrap gap-3">
@@ -330,7 +344,12 @@ export default function GamePage() {
           Sản phẩm chỉ mang tính chất giải trí và giáo dục. Chíp trong trò chơi là ảo, không có giá trị quy đổi
           và không liên quan đến tiền thật. Vui lòng chơi có trách nhiệm.
         </p>
+        </div>
+       </div>
       </main>
+
+      {/* Chat nổi */}
+      <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} />
     </div>
   )
 }

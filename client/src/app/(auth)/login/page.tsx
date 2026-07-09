@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/store/authStore'
-import { useBrand } from '@/hooks/useBrand'
+import { useBrand } from '@/hooks/useSettings'
 import api from '@/lib/api'
 
 export default function LoginPage() {

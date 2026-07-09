@@ -16,6 +16,13 @@ model User {
   role         Role       @default(USER)
   status       UserStatus @default(PENDING)
   createdAt    DateTime   @default(now())
+  // Người chơi ảo (bot)
+  isVirtual    Boolean    @default(false)
+  botSide      String?    // 'T' | 'X' | 'RANDOM'
+  botMin       Int        @default(0)
+  botMax       Int        @default(0)
+  botAuto      Boolean    @default(false)
+  botChat      Boolean    @default(false)
   bets         Bet[]
   auditLogs    AuditLog[] @relation("AdminLogs")
   rounds       Round[]    @relation("CreatedRounds")
@@ -63,9 +70,12 @@ model AuditLog {
 }
 
 model Settings {
-  id        String   @id @default("singleton")
-  brandName String   @default("VOID PROTOCOL")
-  updatedAt DateTime @updatedAt
+  id         String   @id @default("singleton")
+  brandName  String   @default("VOID PROTOCOL")
+  streamUrl  String   @default("")
+  streamType String   @default("iframe") // 'iframe' | 'hls'
+  streamOn   Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
 }
 
 enum Role {

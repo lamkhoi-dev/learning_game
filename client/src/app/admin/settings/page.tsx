@@ -5,12 +5,20 @@ import api from '@/lib/api'
 
 export default function SettingsPage() {
   const [brandName, setBrandName] = useState('')
+  const [streamUrl, setStreamUrl] = useState('')
+  const [streamType, setStreamType] = useState<'iframe' | 'hls'>('iframe')
+  const [streamOn, setStreamOn] = useState(false)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
   useEffect(() => {
     api.get('/api/admin/settings')
-      .then(({ data }) => setBrandName(data.brandName))
+      .then(({ data }) => {
+        setBrandName(data.brandName || '')
+        setStreamUrl(data.streamUrl || '')
+        setStreamType(data.streamType === 'hls' ? 'hls' : 'iframe')
+        setStreamOn(!!data.streamOn)
+      })
       .catch(() => {})
   }, [])
 
@@ -22,9 +30,13 @@ export default function SettingsPage() {
   async function save() {
     setLoading(true)
     try {
-      const { data } = await api.put('/api/admin/settings', { brandName: brandName.trim() })
-      setBrandName(data.brandName)
-      flash('Đã lưu tên thương hiệu')
+      await api.put('/api/admin/settings', {
+        brandName: brandName.trim(),
+        streamUrl: streamUrl.trim(),
+        streamType,
+        streamOn,
+      })
+      flash('Đã lưu cài đặt')
     } catch (err: unknown) {
       flash((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Thất bại', false)
     } finally {
@@ -34,7 +46,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <h2 className="font-orbitron text-xl font-bold text-[var(--text-primary)] tracking-wide">CÀI ĐẶT</h2>
+      <h2 className="font-orbitron text-lg sm:text-xl font-bold text-[var(--text-primary)] tracking-wide">CÀI ĐẶT</h2>
 
       <AnimatePresence>
         {msg && (
@@ -52,10 +64,11 @@ export default function SettingsPage() {
         )}
       </AnimatePresence>
 
+      {/* Thương hiệu */}
       <div className="glass-panel p-6 space-y-4">
         <div>
           <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">
-            Tên thương hiệu (hiện ở header người chơi)
+            Tên thương hiệu (alt logo / SEO)
           </label>
           <input
             value={brandName}
@@ -66,15 +79,63 @@ export default function SettingsPage() {
           />
           <p className="text-[10px] text-[var(--text-muted)] mt-1.5">Tối đa 40 ký tự.</p>
         </div>
-        <button
-          onClick={save}
-          disabled={loading || !brandName.trim()}
-          className="font-orbitron text-xs px-6 py-2.5 rounded-lg text-black tracking-widest disabled:opacity-40 transition-all"
-          style={{ background: 'var(--gold)', boxShadow: '0 0 16px rgba(255,210,74,0.3)' }}
-        >
-          {loading ? '...' : 'LƯU'}
-        </button>
       </div>
+
+      {/* Video Live */}
+      <div className="glass-panel p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="font-orbitron text-sm text-[var(--text-primary)] tracking-widest">VIDEO LIVE</span>
+          <button
+            onClick={() => setStreamOn((v) => !v)}
+            className="font-orbitron text-xs px-4 py-2 rounded-lg tracking-widest transition-all"
+            style={streamOn
+              ? { background: '#22c55e', color: '#000' }
+              : { border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}
+          >
+            {streamOn ? '● ĐANG BẬT' : '○ ĐANG TẮT'}
+          </button>
+        </div>
+
+        <div>
+          <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">Loại nguồn</label>
+          <div className="flex gap-2">
+            {(['iframe', 'hls'] as const).map((t) => (
+              <button key={t} onClick={() => setStreamType(t)}
+                className="font-orbitron text-xs px-4 py-2 rounded-lg tracking-widest transition-all"
+                style={streamType === t
+                  ? { background: 'var(--gold)', color: '#000' }
+                  : { border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
+                {t === 'iframe' ? 'IFRAME EMBED' : 'HLS (.m3u8)'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">
+            {streamType === 'iframe' ? 'URL nhúng (iframe src)' : 'Link HLS (.m3u8)'}
+          </label>
+          <input
+            value={streamUrl}
+            onChange={(e) => setStreamUrl(e.target.value)}
+            maxLength={1000}
+            placeholder={streamType === 'iframe' ? 'https://…embed…' : 'https://…/index.m3u8'}
+            className="w-full bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)] transition-colors"
+          />
+          <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
+            Host dùng OBS restream (TikTok + dịch vụ CDN như Cloudflare Stream/Livepush) rồi dán URL vào đây.
+          </p>
+        </div>
+      </div>
+
+      <button
+        onClick={save}
+        disabled={loading || !brandName.trim()}
+        className="font-orbitron text-xs px-6 py-2.5 rounded-lg text-black tracking-widest disabled:opacity-40 transition-all"
+        style={{ background: 'var(--gold)', boxShadow: '0 0 16px rgba(255,210,74,0.3)' }}
+      >
+        {loading ? '...' : 'LƯU CÀI ĐẶT'}
+      </button>
     </div>
   )
 }

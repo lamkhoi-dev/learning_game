@@ -1,0 +1,12 @@
+-- AlterTable
+ALTER TABLE "Settings" ADD COLUMN     "streamOn" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "streamType" TEXT NOT NULL DEFAULT 'iframe',
+ADD COLUMN     "streamUrl" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "botAuto" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "botChat" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "botMax" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "botMin" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "botSide" TEXT,
+ADD COLUMN     "isVirtual" BOOLEAN NOT NULL DEFAULT false;

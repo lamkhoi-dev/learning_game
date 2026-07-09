@@ -6,6 +6,7 @@ import { AuthRequest } from '../types'
 import { createRound, lockAndPickResult, getRounds } from '../services/round.service'
 import { listUsers, setUserEnergy, setUserRole, deleteUser } from '../services/user.service'
 import { cancelBetAdmin, editBetAmount } from '../services/bet.service'
+import { createVirtualPlayers, listVirtualPlayers, deleteVirtualPlayer, updateBotConfig, scatterBets } from '../services/virtual.service'
 import { prisma } from '../lib/prisma'
 import { emitRoundState, emitEnergyUpdate, getIo } from '../socket'
 import { Choice, Role } from '@prisma/client'
@@ -25,8 +26,8 @@ router.get('/dashboard', async (_req, res: Response): Promise<void> => {
       include: { _count: { select: { bets: true } } },
     }),
     prisma.bet.count({ where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }),
-    prisma.user.count({ where: { role: 'USER' } }),
-    prisma.user.count({ where: { role: 'USER', status: 'PENDING' } }),
+    prisma.user.count({ where: { role: 'USER', isVirtual: false } }),
+    prisma.user.count({ where: { role: 'USER', status: 'PENDING', isVirtual: false } }),
   ])
   res.json({
     activeRound: activeRound ? { ...activeRound, coefficient: activeRound.coefficient.toString() } : null,
@@ -279,31 +280,53 @@ router.put('/users/:id/role', async (req: AuthRequest, res: Response): Promise<v
 
 // Settings — đổi tên thương hiệu
 router.get('/settings', async (_req, res: Response): Promise<void> => {
-  const settings = await prisma.settings.findUnique({ where: { id: 'singleton' } })
-  res.json({ brandName: settings?.brandName ?? 'VOID PROTOCOL' })
+  const s = await prisma.settings.findUnique({ where: { id: 'singleton' } })
+  res.json({
+    brandName: s?.brandName ?? 'VOID PROTOCOL',
+    streamUrl: s?.streamUrl ?? '',
+    streamType: s?.streamType ?? 'iframe',
+    streamOn: s?.streamOn ?? false,
+  })
 })
 
 router.put('/settings', async (req: AuthRequest, res: Response): Promise<void> => {
-  const schema = z.object({ brandName: z.string().min(1).max(40) })
+  const schema = z.object({
+    brandName: z.string().min(1).max(40),
+    streamUrl: z.string().max(1000).optional(),
+    streamType: z.enum(['iframe', 'hls']).optional(),
+    streamOn: z.boolean().optional(),
+  })
   const parsed = schema.safeParse(req.body)
-  if (!parsed.success) { res.status(400).json({ error: 'Tên thương hiệu không hợp lệ (1-40 ký tự)' }); return }
+  if (!parsed.success) { res.status(400).json({ error: 'Dữ liệu cài đặt không hợp lệ' }); return }
   try {
-    const old = await prisma.settings.findUnique({ where: { id: 'singleton' } })
+    const d = parsed.data
+    const payload = {
+      brandName: d.brandName,
+      ...(d.streamUrl !== undefined ? { streamUrl: d.streamUrl } : {}),
+      ...(d.streamType !== undefined ? { streamType: d.streamType } : {}),
+      ...(d.streamOn !== undefined ? { streamOn: d.streamOn } : {}),
+    }
     const updated = await prisma.settings.upsert({
       where: { id: 'singleton' },
-      update: { brandName: parsed.data.brandName },
-      create: { id: 'singleton', brandName: parsed.data.brandName },
+      update: payload,
+      create: { id: 'singleton', ...payload },
     })
     await writeAudit({
       adminId: req.user!.userId,
       action: 'SETTINGS_UPDATED',
       entityType: 'Settings',
       entityId: 'singleton',
-      oldValue: { brandName: old?.brandName ?? null },
-      newValue: { brandName: updated.brandName },
+      newValue: payload,
       ipAddress: getIp(req),
     })
-    res.json({ brandName: updated.brandName })
+    const result = {
+      brandName: updated.brandName,
+      streamUrl: updated.streamUrl,
+      streamType: updated.streamType,
+      streamOn: updated.streamOn,
+    }
+    getIo().emit('settings:update', result) // cập nhật realtime cho người chơi
+    res.json(result)
   } catch (err: unknown) {
     res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
   }
@@ -314,6 +337,69 @@ router.delete('/users/:id', async (req: AuthRequest, res: Response): Promise<voi
   try {
     const result = await deleteUser(req.params.id, req.user!.userId, getIp(req))
     res.json(result)
+  } catch (err: unknown) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
+  }
+})
+
+// ── Người chơi ảo (bot) ──
+router.get('/virtual', async (_req, res: Response): Promise<void> => {
+  res.json(await listVirtualPlayers())
+})
+
+router.post('/virtual', async (req: AuthRequest, res: Response): Promise<void> => {
+  const schema = z.object({ count: z.number().int().min(1).max(100), energy: z.number().int().min(0) })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: 'Số lượng/chíp không hợp lệ' }); return }
+  try {
+    const r = await createVirtualPlayers(parsed.data.count, parsed.data.energy)
+    await writeAudit({ adminId: req.user!.userId, action: 'VIRTUAL_CREATED', entityType: 'User', newValue: r, ipAddress: getIp(req) })
+    res.json(r)
+  } catch (err: unknown) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
+  }
+})
+
+router.put('/virtual/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+  const schema = z.object({
+    side: z.enum(['T', 'X', 'RANDOM']).optional(),
+    min: z.number().int().min(0).optional(),
+    max: z.number().int().min(0).optional(),
+    auto: z.boolean().optional(),
+    chat: z.boolean().optional(),
+    energy: z.number().int().min(0).optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: 'Cấu hình không hợp lệ' }); return }
+  try {
+    res.json(await updateBotConfig(req.params.id, parsed.data))
+  } catch (err: unknown) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
+  }
+})
+
+router.delete('/virtual/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    res.json(await deleteVirtualPlayer(req.params.id))
+  } catch (err: unknown) {
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
+  }
+})
+
+router.post('/virtual/scatter', async (req: AuthRequest, res: Response): Promise<void> => {
+  const schema = z.object({
+    count: z.number().int().min(1).max(100),
+    ratioT: z.number().min(0).max(100),
+    min: z.number().int().min(1),
+    max: z.number().int().min(1),
+    spreadSeconds: z.number().int().min(0).max(120),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: 'Tham số rải cược không hợp lệ' }); return }
+  try {
+    const r = await scatterBets(parsed.data)
+    await writeAudit({ adminId: req.user!.userId, action: 'VIRTUAL_SCATTER', entityType: 'Round', entityId: r.roundId, newValue: { scheduled: r.scheduled }, ipAddress: getIp(req) })
+    res.json(r)
   } catch (err: unknown) {
     res.status(400).json({ error: err instanceof Error ? err.message : 'Thất bại' })
   }

@@ -79,7 +79,7 @@ export async function setUserRole(targetId: string, role: Role, adminId: string,
 }
 
 export async function listUsers(page: number, limit: number, search?: string, status?: string) {
-  const where: Record<string, unknown> = {}
+  const where: Record<string, unknown> = { isVirtual: false } // ẩn bot khỏi danh sách người dùng thật
   if (search) where.OR = [{ username: { contains: search, mode: 'insensitive' } }, { phone: { contains: search } }]
   if (status) where.status = status
 

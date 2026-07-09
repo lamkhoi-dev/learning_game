@@ -21,6 +21,10 @@ export async function createRound(adminId: string, coefficient: number, ip?: str
     newValue: { coefficient },
     ipAddress: ip,
   })
+
+  // Bot có bật tự động sẽ đặt cược cho phiên mới (fire-and-forget)
+  import('./virtual.service').then(m => m.autoPlayForRound(round.id)).catch(() => {})
+
   return round
 }
 
