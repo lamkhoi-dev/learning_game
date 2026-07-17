@@ -5,8 +5,12 @@
 	encode gzip
 
 	# HLS từ media server (OBS → MediaMTX). /hls/live/index.m3u8 → mediamtx /live/index.m3u8
+	# MediaMTX chống hotlink bằng 302 + cookie, redirect về path tuyệt đối (mất /hls);
+	# gắn lại tiền tố /hls vào header Location để redirect chạy đúng qua proxy.
 	handle_path /hls/* {
-		reverse_proxy mediamtx:8888
+		reverse_proxy mediamtx:8888 {
+			header_down Location ^/ /hls/
+		}
 	}
 
 	handle {
