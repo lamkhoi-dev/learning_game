@@ -26,7 +26,11 @@ export function LivePlayer({ url, type, on, fill = false }: Props) {
     import('hls.js').then(({ default: Hls }) => {
       if (cancelled) return
       if (Hls.isSupported()) {
-        const inst = new Hls({ lowLatencyMode: true })
+        const inst = new Hls({
+          lowLatencyMode: true,
+          backBufferLength: 10,
+          maxLiveSyncPlaybackRate: 1.5, // tăng tốc nhẹ để bám mép live, tránh trễ dồn
+        })
         inst.loadSource(url)
         inst.attachMedia(video)
         hls = inst
