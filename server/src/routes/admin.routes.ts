@@ -293,7 +293,7 @@ router.put('/settings', async (req: AuthRequest, res: Response): Promise<void> =
   const schema = z.object({
     brandName: z.string().min(1).max(40),
     streamUrl: z.string().max(1000).optional(),
-    streamType: z.enum(['iframe', 'hls']).optional(),
+    streamType: z.enum(['iframe', 'hls', 'webrtc']).optional(),
     streamOn: z.boolean().optional(),
   })
   const parsed = schema.safeParse(req.body)

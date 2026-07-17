@@ -13,6 +13,11 @@
 		}
 	}
 
+	# WebRTC/WHEP signaling (OBS → MediaMTX, độ trễ ~0.5s). Media chạy UDP trực tiếp cổng 8189.
+	handle_path /whep/* {
+		reverse_proxy mediamtx:8889
+	}
+
 	handle {
 		reverse_proxy server:4000
 	}

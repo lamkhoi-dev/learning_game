@@ -6,7 +6,7 @@ import api from '@/lib/api'
 export interface SiteSettings {
   brandName: string
   streamUrl: string
-  streamType: 'iframe' | 'hls'
+  streamType: 'iframe' | 'hls' | 'webrtc'
   streamOn: boolean
 }
 

@@ -6,7 +6,7 @@ import api from '@/lib/api'
 export default function SettingsPage() {
   const [brandName, setBrandName] = useState('')
   const [streamUrl, setStreamUrl] = useState('')
-  const [streamType, setStreamType] = useState<'iframe' | 'hls'>('iframe')
+  const [streamType, setStreamType] = useState<'iframe' | 'hls' | 'webrtc'>('iframe')
   const [streamOn, setStreamOn] = useState(false)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -16,7 +16,7 @@ export default function SettingsPage() {
       .then(({ data }) => {
         setBrandName(data.brandName || '')
         setStreamUrl(data.streamUrl || '')
-        setStreamType(data.streamType === 'hls' ? 'hls' : 'iframe')
+        setStreamType(data.streamType === 'hls' || data.streamType === 'webrtc' ? data.streamType : 'iframe')
         setStreamOn(!!data.streamOn)
       })
       .catch(() => {})
@@ -98,14 +98,14 @@ export default function SettingsPage() {
 
         <div>
           <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">Loại nguồn</label>
-          <div className="flex gap-2">
-            {(['iframe', 'hls'] as const).map((t) => (
+          <div className="flex gap-2 flex-wrap">
+            {(['iframe', 'hls', 'webrtc'] as const).map((t) => (
               <button key={t} onClick={() => setStreamType(t)}
                 className="font-orbitron text-xs px-4 py-2 rounded-lg tracking-widest transition-all"
                 style={streamType === t
                   ? { background: 'var(--gold)', color: '#000' }
                   : { border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
-                {t === 'iframe' ? 'IFRAME EMBED' : 'HLS (.m3u8)'}
+                {t === 'iframe' ? 'IFRAME EMBED' : t === 'hls' ? 'HLS (~5s)' : 'WEBRTC (~0.5s)'}
               </button>
             ))}
           </div>
@@ -119,11 +119,13 @@ export default function SettingsPage() {
             value={streamUrl}
             onChange={(e) => setStreamUrl(e.target.value)}
             maxLength={1000}
-            placeholder={streamType === 'iframe' ? 'https://…embed…' : 'https://…/index.m3u8'}
+            placeholder={streamType === 'iframe' ? 'https://…embed…' : 'https://an1307.vn/hls/live/index.m3u8'}
             className="w-full bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)] transition-colors"
           />
           <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
-            Host dùng OBS restream (TikTok + dịch vụ CDN như Cloudflare Stream/Livepush) rồi dán URL vào đây.
+            {streamType === 'webrtc'
+              ? 'Dán CHÍNH link HLS (…/hls/live/index.m3u8). WebRTC tự suy ra để phát ~0.5s; mạng nào chặn UDP sẽ tự rớt về HLS.'
+              : 'Host dùng OBS bắn về server (RTMP → HLS/WebRTC) rồi dán URL vào đây.'}
           </p>
         </div>
       </div>
