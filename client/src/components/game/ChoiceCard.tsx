@@ -1,13 +1,15 @@
 'use client'
 import { motion } from 'framer-motion'
 import { Choice } from '@/types'
-import { cn, displayChoice } from '@/lib/utils'
+import { cn, displayChoice, formatEnergy } from '@/lib/utils'
 
 interface Props {
   choice: Choice
   selected: boolean
   disabled: boolean
   betCount?: number
+  total?: number
+  compact?: boolean
   onSelect: () => void
 }
 
@@ -30,7 +32,7 @@ const config = {
   },
 }
 
-export function ChoiceCard({ choice, selected, disabled, betCount = 0, onSelect }: Props) {
+export function ChoiceCard({ choice, selected, disabled, betCount = 0, total = 0, compact = false, onSelect }: Props) {
   const c = config[choice]
 
   return (
@@ -38,10 +40,11 @@ export function ChoiceCard({ choice, selected, disabled, betCount = 0, onSelect 
       onClick={() => !disabled && onSelect()}
       whileHover={!disabled ? { scale: 1.03 } : {}}
       whileTap={!disabled ? { scale: 0.97 } : {}}
-      animate={selected ? { scale: 1.05 } : { scale: 1 }}
+      animate={selected ? { scale: 1.04 } : { scale: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className={cn(
-        'relative flex-1 flex flex-col items-center justify-center rounded-2xl border-2 transition-all duration-300 cursor-pointer select-none min-h-[200px] sm:min-h-[260px]',
+        'relative flex-1 flex flex-col items-center justify-center rounded-2xl border-2 transition-all duration-300 cursor-pointer select-none',
+        compact ? 'min-h-[104px] py-2' : 'min-h-[200px] sm:min-h-[260px]',
         disabled && !selected ? 'opacity-40 cursor-not-allowed' : '',
       )}
       style={{
@@ -53,15 +56,20 @@ export function ChoiceCard({ choice, selected, disabled, betCount = 0, onSelect 
       {/* Symbol */}
       <span
         className={cn('font-orbitron font-black leading-none select-none', c.textClass)}
-        style={{ fontSize: 'clamp(72px, 12vw, 120px)' }}
+        style={{ fontSize: compact ? 'clamp(40px, 11vw, 58px)' : 'clamp(72px, 12vw, 120px)' }}
       >
         {displayChoice(choice)}
+      </span>
+
+      {/* Tổng chíp mỗi bên */}
+      <span className="font-orbitron font-bold mt-1" style={{ color: c.color, fontSize: compact ? '13px' : '16px' }}>
+        {formatEnergy(total)}
       </span>
 
       {/* Bet count badge */}
       {betCount > 0 && (
         <div
-          className="absolute top-3 right-3 text-xs font-orbitron px-2 py-0.5 rounded-full"
+          className={cn('absolute font-orbitron rounded-full', compact ? 'top-1.5 right-1.5 text-[10px] px-1.5' : 'top-3 right-3 text-xs px-2 py-0.5')}
           style={{
             background: `rgba(${choice === 'T' ? '0,245,255' : '255,23,68'},0.15)`,
             color: c.color,
@@ -77,7 +85,7 @@ export function ChoiceCard({ choice, selected, disabled, betCount = 0, onSelect 
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="absolute bottom-3 text-xs font-orbitron tracking-widest"
+          className={cn('absolute font-orbitron tracking-widest', compact ? 'bottom-1 text-[9px]' : 'bottom-3 text-xs')}
           style={{ color: c.color }}
         >
           ✓ ĐÃ CHỌN

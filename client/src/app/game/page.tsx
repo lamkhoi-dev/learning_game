@@ -12,6 +12,7 @@ import { BetPanel } from '@/components/game/BetPanel'
 import { TwoColumnFeed } from '@/components/game/TwoColumnFeed'
 import { LivePlayer } from '@/components/game/LivePlayer'
 import { ChatWidget } from '@/components/game/ChatWidget'
+import { ChatOverlay } from '@/components/game/ChatOverlay'
 import { WinOverlay } from '@/components/game/WinOverlay'
 import { LoseOverlay } from '@/components/game/LoseOverlay'
 import { CountdownOverlay } from '@/components/game/CountdownOverlay'
@@ -172,184 +173,169 @@ export default function GamePage() {
     )
   }
 
+  const resultColor = lastResult === 'X' ? 'var(--crimson-xenon)' : lastResult === 'T' ? 'var(--cyan-titan)' : 'var(--text-muted)'
+  const statusText = round?.paused ? '⏸ TẠM KHÓA'
+    : round?.status === 'OPEN' ? '🟢 ĐANG MỞ'
+    : round?.status === 'LOCKED' ? '⏳ ĐANG CHỐT'
+    : round?.status === 'RESULT' ? 'ĐÃ KẾT THÚC'
+    : 'CHỜ PHIÊN'
+
+  // ── Khu chơi (gọn) ──
+  const gameArea = (
+    <div className="px-3 py-3 flex flex-col gap-3">
+      {/* Thanh trạng thái gọn */}
+      <div className="glass-panel px-3 py-2 flex items-center justify-between gap-2 flex-wrap">
+        <span className="font-orbitron text-xs font-bold tracking-widest" style={{ color: round?.paused ? 'var(--crimson-xenon)' : 'var(--gold)' }}>
+          {statusText}{round && <span className="text-[var(--text-muted)] font-normal ml-1.5">#{round.id.slice(-4).toUpperCase()}</span>}
+        </span>
+        <div className="flex items-center gap-3 text-xs font-orbitron">
+          <span className="text-[var(--text-muted)]">Hệ số <span className="neon-text-gold font-bold">×{round?.coefficient ?? '—'}</span></span>
+          <span className="text-[var(--text-muted)]">KQ <span className="font-black text-base align-middle" style={{ color: resultColor }}>{lastResult ? displayChoice(lastResult) : '—'}</span></span>
+        </div>
+        <div className="flex items-center gap-3 text-[11px] font-orbitron w-full sm:w-auto">
+          <span className="flex items-center gap-1 text-[var(--text-muted)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" /><span className="text-[#22c55e] font-bold">{onlineStats.online}</span> online
+          </span>
+          <span className="text-[var(--text-muted)]">🎯 <span className="neon-text-gold font-bold">{onlineStats.totalBettors}</span> đã đặt</span>
+        </div>
+      </div>
+
+      {/* Thẻ chọn ₮ / Ӿ (gọn, kèm tổng chíp mỗi bên) */}
+      <div className="flex gap-2.5">
+        {(['T', 'X'] as Choice[]).map((c) => (
+          <ChoiceCard
+            key={c}
+            choice={c}
+            compact
+            selected={selectedChoice === c}
+            disabled={!canBet}
+            betCount={c === 'T' ? stats.countT : stats.countX}
+            total={c === 'T' ? stats.totalT : stats.totalX}
+            onSelect={() => canBet && setSelectedChoice(c)}
+          />
+        ))}
+      </div>
+
+      {/* Khu đặt cược */}
+      <div className="glass-panel p-3">
+        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <p className="text-[11px] font-orbitron tracking-widest text-[var(--text-muted)]">
+            {canBet
+              ? selectedChoice ? `ĐANG CHỌN ${displayChoice(selectedChoice)} — NHẬP CHÍP` : 'CHỌN ₮ / Ӿ RỒI ĐẶT'
+              : round?.paused ? '⏸ TẠM KHÓA — CHỜ CHÚT'
+              : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...'
+              : 'CHƯA THỂ ĐẶT'}
+          </p>
+          {(myTotals.t > 0 || myTotals.x > 0) && (
+            <p className="text-[11px] font-orbitron">
+              <span className="text-[var(--text-muted)]">Bạn: </span>
+              {myTotals.t > 0 && <span className="neon-text-cyan">₮{formatEnergy(myTotals.t)}</span>}
+              {myTotals.t > 0 && myTotals.x > 0 && <span className="text-[var(--text-muted)]"> · </span>}
+              {myTotals.x > 0 && <span style={{ color: 'var(--crimson-xenon)' }}>Ӿ{formatEnergy(myTotals.x)}</span>}
+            </p>
+          )}
+        </div>
+        <BetPanel
+          roundId={round?.id ?? ''}
+          choice={selectedChoice}
+          userEnergy={user?.energy ?? '0'}
+          disabled={!canBet || !selectedChoice}
+          onBet={handleBet}
+        />
+      </div>
+
+      {/* 2 cột người chơi đang đặt */}
+      <div>
+        <p className="text-[11px] text-[var(--text-muted)] font-orbitron tracking-widest mb-1.5 flex items-center gap-2">
+          <span>NGƯỜI CHƠI ĐANG ĐẶT</span><span className="neon-text-gold">({bets.length})</span>
+        </p>
+        <TwoColumnFeed
+          bets={bets}
+          currentUserId={user?.id ?? ''}
+          isAdmin={isAdmin}
+          canCancel={isAdmin && canCancel}
+          cancellingId={cancellingId}
+          onCancel={handleCancelFromFeed}
+        />
+      </div>
+
+      <p className="text-[10px] leading-relaxed text-center max-w-xl mx-auto pt-1 pb-3" style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
+        Sản phẩm chỉ mang tính giải trí & giáo dục. Chíp là ảo, không quy đổi tiền thật. Chơi có trách nhiệm.
+      </p>
+    </div>
+  )
+
   return (
-    <div className="void-grid min-h-screen flex flex-col">
+    <div className="void-grid h-[100dvh] flex flex-col overflow-hidden">
       <CountdownOverlay visible={countdownVisible} seconds={countdownSeconds} />
       <WinOverlay visible={winVisible} result={resultInfo.result} net={resultInfo.amount} onDismiss={() => setWinVisible(false)} />
       <LoseOverlay visible={loseVisible} result={resultInfo.result} loss={resultInfo.amount} onDismiss={() => setLoseVisible(false)} />
 
-      {/* ── Header ── */}
-      <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--glass-border)] bg-[var(--bg-surface)]/60 backdrop-blur sticky top-0 z-30">
-        <div className="flex items-center gap-2.5 min-w-0">
+      {/* ── Header slim ── */}
+      <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 border-b border-[var(--glass-border)] bg-[var(--bg-surface)]/70 backdrop-blur z-30">
+        <div className="flex items-center gap-2 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.jpg" alt={brandName} className="h-10 w-auto rounded-md flex-shrink-0" />
-          <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: connected ? 'var(--gold)' : '#555', boxShadow: connected ? '0 0 6px var(--gold)' : 'none' }}
-          />
+          <img src="/logo.jpg" alt={brandName} className="h-8 w-auto rounded-md flex-shrink-0" />
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: connected ? 'var(--gold)' : '#555', boxShadow: connected ? '0 0 6px var(--gold)' : 'none' }} />
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          {/* Tên người chơi */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)]">
-            <span className="text-sm">👤</span>
-            <span className="text-xs sm:text-sm font-orbitron text-[var(--text-primary)] truncate max-w-[90px]">{user?.username}</span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)]">
+            <span className="text-xs">👤</span>
+            <span className="text-xs font-orbitron text-[var(--text-primary)] truncate max-w-[70px]">{user?.username}</span>
           </div>
-          {/* Số chíp */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border" style={{ borderColor: 'var(--gold-dim)', background: 'rgba(255,210,74,0.08)' }}>
-            <span className="text-sm">💰</span>
-            <span className="font-orbitron text-xs sm:text-sm font-bold neon-text-gold">{formatEnergy(user?.energy ?? '0')}</span>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg border" style={{ borderColor: 'var(--gold-dim)', background: 'rgba(255,210,74,0.08)' }}>
+            <span className="text-xs">💰</span>
+            <span className="font-orbitron text-xs font-bold neon-text-gold">{formatEnergy(user?.energy ?? '0')}</span>
           </div>
           {isAdmin && (
-            <button onClick={() => router.push('/admin/dashboard')}
-              className="text-xs font-orbitron px-3 py-1.5 rounded-lg border border-[var(--glass-border)] text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all">
+            <button onClick={() => router.push('/admin/dashboard')} className="text-[11px] font-orbitron px-2 py-1 rounded-lg border border-[var(--glass-border)] text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all">
               ADMIN
             </button>
           )}
-          <button onClick={() => { clearAuth(); router.replace('/login') }}
-            className="text-xs font-orbitron px-3 py-1.5 rounded-lg border border-[var(--glass-border)] text-[var(--text-muted)] hover:border-[var(--crimson-xenon)] hover:text-[var(--crimson-xenon)] transition-all">
+          <button onClick={() => { clearAuth(); router.replace('/login') }} className="text-[11px] font-orbitron px-2 py-1 rounded-lg border border-[var(--glass-border)] text-[var(--text-muted)] hover:border-[var(--crimson-xenon)] hover:text-[var(--crimson-xenon)] transition-all">
             THOÁT
           </button>
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-5">
-       <div className="flex flex-col lg:flex-row gap-4 lg:items-start lg:justify-center">
+      {/* ── Thân: cột giữa kiểu điện thoại ── */}
+      <div className="flex-1 min-h-0 w-full max-w-[560px] mx-auto flex flex-col">
+        {settings.streamOn ? (
+          <>
+            {/* VIDEO 3/5 + chat trong suốt phủ lên */}
+            <section className="relative flex-[3] min-h-0 bg-black">
+              <LivePlayer url={settings.streamUrl} type={settings.streamType} on={settings.streamOn} fill />
 
-        {/* ── Cột trái: video live ── */}
-        {settings.streamOn && (
-          <div className="w-full lg:flex-1 lg:min-w-0 lg:sticky lg:top-[76px]">
-            <LivePlayer url={settings.streamUrl} type={settings.streamType} on={settings.streamOn} />
-          </div>
+              {/* Badge trạng thái nổi trên video */}
+              <div className="absolute top-2 left-2 right-2 z-20 pointer-events-none flex items-start justify-between gap-2">
+                <span className="font-orbitron text-[11px] font-bold px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgba(0,0,0,0.45)', color: round?.paused ? 'var(--crimson-xenon)' : 'var(--gold)', backdropFilter: 'blur(3px)' }}>
+                  {statusText} · ×{round?.coefficient ?? '—'}
+                </span>
+                <span className="font-orbitron text-[11px] px-2.5 py-1 rounded-full flex items-center gap-1"
+                  style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', backdropFilter: 'blur(3px)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />{onlineStats.online}
+                </span>
+              </div>
+
+              {/* Chat trong suốt */}
+              <ChatOverlay isAdmin={isAdmin} currentUserId={user?.id ?? ''} />
+            </section>
+
+            {/* KHU CHƠI 2/5 (cuộn được) */}
+            <section className="flex-[2] min-h-0 overflow-y-auto">
+              {gameArea}
+            </section>
+          </>
+        ) : (
+          <section className="flex-1 min-h-0 overflow-y-auto">
+            {gameArea}
+          </section>
         )}
+      </div>
 
-        {/* ── Cột phải: khu chơi ── */}
-        <div className={`w-full flex flex-col gap-4 ${settings.streamOn ? 'lg:max-w-[460px]' : 'max-w-3xl mx-auto'}`}>
-
-        {/* ── Thanh trạng thái phiên ── */}
-        <div className="glass-panel p-4 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <p className="font-orbitron text-sm font-bold tracking-widest" style={{ color: round?.paused ? 'var(--crimson-xenon)' : 'var(--gold)', textShadow: round?.paused ? '0 0 8px rgba(255,23,68,0.5)' : '0 0 8px rgba(255,210,74,0.5)' }}>
-              {round?.paused ? '⏸ PHÒNG TẠM KHÓA — NGỪNG NHẬN CƯỢC'
-                : round?.status === 'OPEN' ? 'PHIÊN ĐANG MỞ — ĐẶT CƯỢC'
-                : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...'
-                : round?.status === 'RESULT' ? 'PHIÊN ĐÃ KẾT THÚC'
-                : 'CHỜ BẮT ĐẦU PHIÊN MỚI'}
-            </p>
-            {round && <p className="text-xs text-[var(--text-muted)] mt-0.5">Phiên #{round.id.slice(-6).toUpperCase()}</p>}
-            <div className="flex items-center gap-3 mt-1.5">
-              <span className="flex items-center gap-1 text-xs font-orbitron text-[var(--text-muted)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
-                <span className="text-[#22c55e] font-bold">{onlineStats.online}</span> online
-              </span>
-              <span className="flex items-center gap-1 text-xs font-orbitron text-[var(--text-muted)]">
-                🎯 <span className="neon-text-gold font-bold">{onlineStats.totalBettors}</span> đã đặt
-              </span>
-            </div>
-          </div>
-          {/* Kết quả + hệ số */}
-          <div className="flex items-center gap-3">
-            <div className="text-center">
-              <div className="text-[10px] text-[var(--text-muted)] font-orbitron tracking-widest">HỆ SỐ</div>
-              <div className="font-orbitron text-lg font-black neon-text-gold">×{round?.coefficient ?? '—'}</div>
-            </div>
-            <div className="text-center px-3 py-1.5 rounded-lg border" style={{
-              borderColor: lastResult === 'X' ? 'var(--crimson-xenon)' : lastResult === 'T' ? 'var(--cyan-titan)' : 'var(--glass-border)',
-            }}>
-              <div className="text-[10px] text-[var(--text-muted)] font-orbitron tracking-widest">KẾT QUẢ</div>
-              <div className="font-orbitron text-2xl font-black" style={{
-                color: lastResult === 'X' ? 'var(--crimson-xenon)' : lastResult === 'T' ? 'var(--cyan-titan)' : 'var(--text-muted)',
-              }}>
-                {lastResult ? displayChoice(lastResult) : '—'}
-              </div>
-              {/* Live on TikTok ngay dưới ô kết quả */}
-              <div className="flex items-center justify-center gap-1 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--crimson-xenon)] animate-pulse" />
-                <span className="text-[10px] font-orbitron tracking-wider text-[var(--text-muted)]">Live on TikTok</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Thẻ chọn T / X ── */}
-        <div>
-          <p className="text-xs text-[var(--text-muted)] font-orbitron tracking-widest mb-2 text-center">
-            BẤM CHỌN ₮ HOẶC Ӿ RỒI ĐẶT CƯỢC
-          </p>
-          <div className="flex gap-3">
-            {(['T', 'X'] as Choice[]).map((c) => (
-              <ChoiceCard
-                key={c}
-                choice={c}
-                selected={selectedChoice === c}
-                disabled={!canBet}
-                betCount={c === 'T' ? stats.countT : stats.countX}
-                onSelect={() => canBet && setSelectedChoice(c)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* ── Khu đặt cược ── */}
-        <div className="glass-panel p-4">
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <p className="text-xs font-orbitron tracking-widest" style={{ color: canBet ? 'var(--text-muted)' : 'var(--text-muted)' }}>
-              {canBet
-                ? selectedChoice ? `ĐANG CHỌN ${displayChoice(selectedChoice)} — NHẬP SỐ CHÍP` : 'CHỌN ₮ HOẶC Ӿ RỒI ĐẶT (ĐẶT NHIỀU LẦN, CẢ 2 BÊN)'
-                : round?.paused ? '⏸ PHÒNG TẠM KHÓA — VUI LÒNG CHỜ'
-                : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...'
-                : 'CHƯA THỂ ĐẶT CƯỢC'}
-            </p>
-            {(myTotals.t > 0 || myTotals.x > 0) && (
-              <p className="text-xs font-orbitron">
-                <span className="text-[var(--text-muted)]">Bạn đặt: </span>
-                {myTotals.t > 0 && <span className="neon-text-cyan">₮ {formatEnergy(myTotals.t)}</span>}
-                {myTotals.t > 0 && myTotals.x > 0 && <span className="text-[var(--text-muted)]"> · </span>}
-                {myTotals.x > 0 && <span style={{ color: 'var(--crimson-xenon)' }}>Ӿ {formatEnergy(myTotals.x)}</span>}
-              </p>
-            )}
-          </div>
-          <BetPanel
-            roundId={round?.id ?? ''}
-            choice={selectedChoice}
-            userEnergy={user?.energy ?? '0'}
-            disabled={!canBet || !selectedChoice}
-            onBet={handleBet}
-          />
-          {isAdmin && (
-            <p className="text-[10px] text-[var(--text-muted)] mt-2 text-center">
-              (Admin) Hủy từng lệnh ở danh sách bên dưới
-            </p>
-          )}
-        </div>
-
-        {/* ── 2 cột live + tổng chíp ── */}
-        <div>
-          <p className="text-xs text-[var(--text-muted)] font-orbitron tracking-widest mb-2 flex items-center gap-2">
-            <span>NGƯỜI CHƠI ĐANG ĐẶT</span>
-            <span className="neon-text-gold">({bets.length})</span>
-          </p>
-          <TwoColumnFeed
-            bets={bets}
-            currentUserId={user?.id ?? ''}
-            isAdmin={isAdmin}
-            canCancel={isAdmin && canCancel}
-            cancellingId={cancellingId}
-            onCancel={handleCancelFromFeed}
-          />
-        </div>
-
-        {/* Miễn trừ trách nhiệm */}
-        <p className="text-[10px] leading-relaxed text-center max-w-xl mx-auto pt-2 pb-4"
-          style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
-          Sản phẩm chỉ mang tính chất giải trí và giáo dục. Chíp trong trò chơi là ảo, không có giá trị quy đổi
-          và không liên quan đến tiền thật. Vui lòng chơi có trách nhiệm.
-        </p>
-        </div>
-       </div>
-      </main>
-
-      {/* Chat nổi */}
-      <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} />
+      {/* Khi chưa bật live → chat dạng bong bóng */}
+      {!settings.streamOn && <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} />}
     </div>
   )
 }

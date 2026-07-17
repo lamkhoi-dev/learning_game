@@ -5,9 +5,10 @@ interface Props {
   url: string
   type: 'iframe' | 'hls'
   on: boolean
+  fill?: boolean // lấp đầy khung cha (kiểu TikTok live) thay vì ép tỉ lệ 16:9
 }
 
-export function LivePlayer({ url, type, on }: Props) {
+export function LivePlayer({ url, type, on, fill = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -15,7 +16,6 @@ export function LivePlayer({ url, type, on }: Props) {
     const video = videoRef.current
     if (!video) return
 
-    // Safari / iOS phát HLS native
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = url
       return
@@ -31,16 +31,20 @@ export function LivePlayer({ url, type, on }: Props) {
         inst.attachMedia(video)
         hls = inst
       } else {
-        video.src = url // fallback
+        video.src = url
       }
     }).catch(() => {})
 
     return () => { cancelled = true; hls?.destroy() }
   }, [url, type, on])
 
+  const wrap = fill
+    ? 'w-full h-full bg-black overflow-hidden'
+    : 'glass-panel overflow-hidden aspect-video'
+
   if (!on || !url) {
     return (
-      <div className="glass-panel flex items-center justify-center aspect-video">
+      <div className={fill ? 'w-full h-full bg-black flex items-center justify-center' : 'glass-panel flex items-center justify-center aspect-video'}>
         <div className="text-center">
           <div className="text-3xl mb-2">🔴</div>
           <p className="font-orbitron text-sm text-[var(--text-muted)] tracking-widest">LIVE SẼ BẮT ĐẦU SỚM</p>
@@ -50,7 +54,7 @@ export function LivePlayer({ url, type, on }: Props) {
   }
 
   return (
-    <div className="glass-panel overflow-hidden aspect-video">
+    <div className={wrap}>
       {type === 'iframe' ? (
         <iframe
           src={url}
@@ -62,11 +66,11 @@ export function LivePlayer({ url, type, on }: Props) {
       ) : (
         <video
           ref={videoRef}
-          className="w-full h-full bg-black"
+          className={fill ? 'w-full h-full bg-black object-cover' : 'w-full h-full bg-black'}
           autoPlay
           muted
           playsInline
-          controls
+          controls={!fill}
         />
       )}
     </div>
