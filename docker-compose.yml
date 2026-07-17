@@ -41,6 +41,17 @@ services:
     expose:
       - "4000"
 
+  # Media server: nhận RTMP từ OBS (1935) → phát HLS (8888) cho web
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    restart: unless-stopped
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+    ports:
+      - "1935:1935"   # OBS bắn RTMP vào cổng này
+    expose:
+      - "8888"        # HLS nội bộ, Caddy proxy ra HTTPS
+
   # Reverse proxy + auto HTTPS. Nếu KHÔNG dùng domain, có thể bỏ service này
   # và mở lại "ports: 80:4000" ở service server.
   caddy:
@@ -48,6 +59,7 @@ services:
     restart: unless-stopped
     depends_on:
       - server
+      - mediamtx
     ports:
       - "80:80"
       - "443:443"

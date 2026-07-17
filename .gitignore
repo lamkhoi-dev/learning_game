@@ -10,3 +10,6 @@ dist/
 /*.jpg
 /*.png
 /*.jpeg
+
+# cấu hình media server (chứa mật khẩu publish) — chỉ nằm trên VPS
+/mediamtx.yml
