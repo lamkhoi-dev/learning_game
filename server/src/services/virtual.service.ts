@@ -6,8 +6,8 @@ import { broadcastNewBet, pushChat } from '../socket'
 const NAMES = ['Minh', 'Hùng', 'Trang', 'Long', 'Hoa', 'Nam', 'Tú', 'Linh', 'Khoa', 'Dũng',
   'Vy', 'An', 'Bảo', 'Thảo', 'Phúc', 'Quân', 'Hà', 'Sơn', 'Ngọc', 'Tài', 'Đạt', 'Huy', 'Mai', 'Phong']
 
-const CHAT_LINES = ['vào ₮ nào ae', 'Ӿ ăn chắc', 'theo cầu ₮', 'đỏ quá 😤', 'all in ₮', 'Ӿ đi mọi người',
-  'lần này ăn to', 'soi cầu ra ₮', 'max Ӿ luôn', 'gỡ nào ae', 'ăn dày 🔥', 'theo nhà cái']
+const CHAT_LINES = ['vào A nào ae', 'B ăn chắc', 'theo cầu A', 'đỏ quá 😤', 'all in A', 'B đi mọi người',
+  'lần này ăn to', 'soi cầu ra A', 'max B luôn', 'gỡ nào ae', 'ăn dày 🔥', 'theo nhà cái']
 
 function randInt(min: number, max: number): number {
   if (max < min) [min, max] = [max, min]

@@ -35,7 +35,7 @@ export default function RoundsPage() {
   useEffect(() => { fetchRound() }, [])
 
   async function cancelBet(bet: RoundBet) {
-    const sym = bet.choice === 'T' ? '₮' : 'Ӿ'
+    const sym = bet.choice === 'T' ? 'A' : 'B'
     if (!confirm(`Hủy lệnh ${sym} của ${bet.username} (${Number(bet.amount).toLocaleString('vi-VN')} chíp)? Chíp sẽ được hoàn lại.`)) return
     setCancellingBet(bet.betId)
     try {
@@ -141,7 +141,7 @@ export default function RoundsPage() {
     setLoading(true)
     try {
       await api.put(`/api/admin/rounds/${activeRound!.id}/lock-and-result`, { result })
-      flash(`Đã khoá! Kết quả ${result === 'T' ? '₮' : 'Ӿ'} hiện sau 5 giây — round mới sẽ tự tạo`)
+      flash(`Đã khoá! Kết quả ${result === 'T' ? 'A' : 'B'} hiện sau 5 giây — round mới sẽ tự tạo`)
     } catch (err: unknown) {
       flash((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Thất bại', false)
     } finally { setLoading(false) }
@@ -264,7 +264,7 @@ export default function RoundsPage() {
                   <span className="text-sm font-orbitron">
                     Xác nhận{' '}
                     <span style={{ color: pendingResult === 'T' ? 'var(--cyan-titan)' : 'var(--crimson-xenon)' }}>
-                      {pendingResult === 'T' ? '₮' : 'Ӿ'}
+                      {pendingResult === 'T' ? 'A' : 'B'}
                     </span>{' '}
                     thắng?
                   </span>
@@ -287,14 +287,14 @@ export default function RoundsPage() {
                     className="flex-1 font-orbitron text-lg font-black py-5 rounded-xl border-2 transition-all hover:scale-105 active:scale-95"
                     style={{ borderColor: 'var(--cyan-titan)', color: 'var(--cyan-titan)', background: 'rgba(0,245,255,0.06)', boxShadow: '0 0 20px rgba(0,245,255,0.1)' }}
                   >
-                    ₮
+                    A
                   </button>
                   <button
                     onClick={() => setPendingResult('X')} disabled={loading}
                     className="flex-1 font-orbitron text-lg font-black py-5 rounded-xl border-2 transition-all hover:scale-105 active:scale-95"
                     style={{ borderColor: 'var(--crimson-xenon)', color: 'var(--crimson-xenon)', background: 'rgba(255,23,68,0.06)', boxShadow: '0 0 20px rgba(255,23,68,0.1)' }}
                   >
-                    Ӿ
+                    B
                   </button>
                 </div>
               )}
@@ -310,7 +310,7 @@ export default function RoundsPage() {
             </div>
           )}
 
-          {/* Live bets — 2 cột ₮ / Ӿ, có sửa & hủy */}
+          {/* Live bets — 2 cột A / B, có sửa & hủy */}
           <div className="border-t border-[var(--glass-border)] pt-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-[var(--text-muted)] font-orbitron tracking-widest">

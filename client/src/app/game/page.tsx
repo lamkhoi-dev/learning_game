@@ -200,7 +200,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* Thẻ chọn ₮ / Ӿ (gọn, kèm tổng chíp mỗi bên) */}
+      {/* Thẻ chọn A / B (gọn, kèm tổng chíp mỗi bên) */}
       <div className="flex gap-2.5">
         {(['T', 'X'] as Choice[]).map((c) => (
           <ChoiceCard
@@ -221,7 +221,7 @@ export default function GamePage() {
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
           <p className="text-[11px] font-orbitron tracking-widest text-[var(--text-muted)]">
             {canBet
-              ? selectedChoice ? `ĐANG CHỌN ${displayChoice(selectedChoice)} — NHẬP CHÍP` : 'CHỌN ₮ / Ӿ RỒI ĐẶT'
+              ? selectedChoice ? `ĐANG CHỌN ${displayChoice(selectedChoice)} — NHẬP CHÍP` : 'CHỌN A / B RỒI ĐẶT'
               : round?.paused ? '⏸ TẠM KHÓA — CHỜ CHÚT'
               : round?.status === 'LOCKED' ? 'ĐANG CHỐT KẾT QUẢ...'
               : 'CHƯA THỂ ĐẶT'}
@@ -229,9 +229,9 @@ export default function GamePage() {
           {(myTotals.t > 0 || myTotals.x > 0) && (
             <p className="text-[11px] font-orbitron">
               <span className="text-[var(--text-muted)]">Bạn: </span>
-              {myTotals.t > 0 && <span className="neon-text-cyan">₮{formatEnergy(myTotals.t)}</span>}
+              {myTotals.t > 0 && <span className="neon-text-cyan">A{formatEnergy(myTotals.t)}</span>}
               {myTotals.t > 0 && myTotals.x > 0 && <span className="text-[var(--text-muted)]"> · </span>}
-              {myTotals.x > 0 && <span style={{ color: 'var(--crimson-xenon)' }}>Ӿ{formatEnergy(myTotals.x)}</span>}
+              {myTotals.x > 0 && <span style={{ color: 'var(--crimson-xenon)' }}>B{formatEnergy(myTotals.x)}</span>}
             </p>
           )}
         </div>
@@ -274,8 +274,7 @@ export default function GamePage() {
       {/* ── Header slim ── */}
       <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 border-b border-[var(--glass-border)] bg-[var(--bg-surface)]/70 backdrop-blur z-30">
         <div className="flex items-center gap-2 min-w-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.jpg" alt={brandName} className="h-8 w-auto rounded-md flex-shrink-0" />
+          <span className="font-orbitron text-sm font-black neon-text-gold tracking-widest truncate">{brandName}</span>
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: connected ? 'var(--gold)' : '#555', boxShadow: connected ? '0 0 6px var(--gold)' : 'none' }} />
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
