@@ -12,7 +12,6 @@ import { BetPanel } from '@/components/game/BetPanel'
 import { TwoColumnFeed } from '@/components/game/TwoColumnFeed'
 import { LivePlayer } from '@/components/game/LivePlayer'
 import { ChatWidget } from '@/components/game/ChatWidget'
-import { ChatOverlay } from '@/components/game/ChatOverlay'
 import { WinOverlay } from '@/components/game/WinOverlay'
 import { LoseOverlay } from '@/components/game/LoseOverlay'
 import { CountdownOverlay } from '@/components/game/CountdownOverlay'
@@ -316,9 +315,6 @@ export default function GamePage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />{onlineStats.online}
                 </span>
               </div>
-
-              {/* Chat trong suốt */}
-              <ChatOverlay isAdmin={isAdmin} currentUserId={user?.id ?? ''} />
             </section>
 
             {/* KHU CHƠI 2/5 (cuộn được) */}
@@ -333,8 +329,8 @@ export default function GamePage() {
         )}
       </div>
 
-      {/* Khi chưa bật live → chat dạng bong bóng */}
-      {!settings.streamOn && <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} />}
+      {/* Chat dạng bong bóng nổi */}
+      <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} />
     </div>
   )
 }

@@ -85,7 +85,7 @@ export function ChoiceCard({ choice, selected, disabled, betCount = 0, total = 0
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={cn('absolute font-orbitron tracking-widest', compact ? 'bottom-1 text-[9px]' : 'bottom-3 text-xs')}
+          className={cn('absolute font-orbitron tracking-widest', compact ? 'bottom-1 right-1.5 text-[9px]' : 'bottom-3 right-3 text-xs')}
           style={{ color: c.color }}
         >
           ✓ ĐÃ CHỌN
