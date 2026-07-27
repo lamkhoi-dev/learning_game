@@ -28,14 +28,14 @@ export function ChatOverlay({ isAdmin, currentUserId }: Props) {
     setText('')
   }
 
-  const recent = messages.slice(-30)
+  const recent = messages.slice(-40)
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-end">
       {/* Tin nhắn — trong suốt, thấy live phía sau */}
       <div
         className="px-2.5 pb-1 flex flex-col justify-end gap-1 overflow-hidden"
-        style={{ maxHeight: '48%', maskImage: 'linear-gradient(to top, black 72%, transparent)', WebkitMaskImage: 'linear-gradient(to top, black 72%, transparent)' }}
+        style={{ maxHeight: '62%', maskImage: 'linear-gradient(to top, black 60%, transparent)', WebkitMaskImage: 'linear-gradient(to top, black 60%, transparent)' }}
       >
         <AnimatePresence initial={false}>
           {recent.map((m) => (

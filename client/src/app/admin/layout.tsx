@@ -10,7 +10,7 @@ const navItems = [
   { href: '/admin/dashboard', label: 'TỔNG QUAN' },
   { href: '/admin/rounds',    label: 'PHIÊN CƯỢC' },
   { href: '/admin/users',     label: 'NGƯỜI DÙNG' },
-  { href: '/admin/virtual',   label: 'NGƯỜI CHƠI ẢO' },
+  // Tạm ẩn — chức năng người chơi ảo tạm ngừng dùng (đưa lại vào navItems để bật lại)
   { href: '/admin/audit',     label: 'NHẬT KÝ' },
   { href: '/admin/settings',  label: 'CÀI ĐẶT' },
 ]

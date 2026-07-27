@@ -182,9 +182,9 @@ export default function GamePage() {
 
   // ── Khu chơi (gọn) ──
   const gameArea = (
-    <div className="px-3 py-3 flex flex-col gap-3">
+    <div className="px-3 py-2 flex flex-col gap-2">
       {/* Thanh trạng thái gọn */}
-      <div className="glass-panel px-3 py-2 flex items-center justify-between gap-2 flex-wrap">
+      <div className="glass-panel px-3 py-1.5 flex items-center justify-between gap-2 flex-wrap">
         <span className="font-orbitron text-xs font-bold tracking-widest" style={{ color: round?.paused ? 'var(--crimson-xenon)' : 'var(--gold)' }}>
           {statusText}{round && <span className="text-[var(--text-muted)] font-normal ml-1.5">#{round.id.slice(-4).toUpperCase()}</span>}
         </span>
@@ -201,7 +201,7 @@ export default function GamePage() {
       </div>
 
       {/* Thẻ chọn A / B (gọn, kèm tổng chíp mỗi bên) */}
-      <div className="flex gap-2.5">
+      <div className="flex gap-2">
         {(['T', 'X'] as Choice[]).map((c) => (
           <ChoiceCard
             key={c}
@@ -217,8 +217,8 @@ export default function GamePage() {
       </div>
 
       {/* Khu đặt cược */}
-      <div className="glass-panel p-3">
-        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+      <div className="glass-panel p-2.5">
+        <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
           <p className="text-[11px] font-orbitron tracking-widest text-[var(--text-muted)]">
             {canBet
               ? selectedChoice ? `ĐANG CHỌN ${displayChoice(selectedChoice)} — NHẬP CHÍP` : 'CHỌN A / B RỒI ĐẶT'
@@ -278,9 +278,9 @@ export default function GamePage() {
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: connected ? 'var(--gold)' : '#555', boxShadow: connected ? '0 0 6px var(--gold)' : 'none' }} />
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)]">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)]">
             <span className="text-xs">👤</span>
-            <span className="text-xs font-orbitron text-[var(--text-primary)] truncate max-w-[70px]">{user?.username}</span>
+            <span className="text-xs font-orbitron text-[var(--text-primary)] truncate max-w-[60px] sm:max-w-[100px]">{user?.username}</span>
           </div>
           <div className="flex items-center gap-1 px-2 py-1 rounded-lg border" style={{ borderColor: 'var(--gold-dim)', background: 'rgba(255,210,74,0.08)' }}>
             <span className="text-xs">💰</span>

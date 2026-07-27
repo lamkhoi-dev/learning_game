@@ -44,7 +44,7 @@ export function ChoiceCard({ choice, selected, disabled, betCount = 0, total = 0
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className={cn(
         'relative flex-1 flex flex-col items-center justify-center rounded-2xl border-2 transition-all duration-300 cursor-pointer select-none',
-        compact ? 'min-h-[104px] py-2' : 'min-h-[200px] sm:min-h-[260px]',
+        compact ? 'min-h-[60px] py-1' : 'min-h-[200px] sm:min-h-[260px]',
         disabled && !selected ? 'opacity-40 cursor-not-allowed' : '',
       )}
       style={{
@@ -56,13 +56,13 @@ export function ChoiceCard({ choice, selected, disabled, betCount = 0, total = 0
       {/* Symbol */}
       <span
         className={cn('font-orbitron font-black leading-none select-none', c.textClass)}
-        style={{ fontSize: compact ? 'clamp(40px, 11vw, 58px)' : 'clamp(72px, 12vw, 120px)' }}
+        style={{ fontSize: compact ? 'clamp(24px, 7vw, 32px)' : 'clamp(72px, 12vw, 120px)' }}
       >
         {displayChoice(choice)}
       </span>
 
       {/* Tổng chíp mỗi bên */}
-      <span className="font-orbitron font-bold mt-1" style={{ color: c.color, fontSize: compact ? '13px' : '16px' }}>
+      <span className={cn('font-orbitron font-bold', compact ? 'mt-0.5' : 'mt-1')} style={{ color: c.color, fontSize: compact ? '11px' : '16px' }}>
         {formatEnergy(total)}
       </span>
 
