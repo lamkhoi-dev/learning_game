@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   url: string
@@ -22,6 +22,16 @@ function deriveUrls(u: string): { hls: string; whep: string } {
 
 export function LivePlayer({ url, type, on, fill = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  // Trình duyệt chỉ cho autoplay khi video tắt tiếng — mặc định tắt, cho phép bật lại qua nút bấm
+  const [muted, setMuted] = useState(true)
+
+  function toggleMute() {
+    setMuted((prev) => {
+      const next = !prev
+      if (videoRef.current) videoRef.current.muted = next
+      return next
+    })
+  }
 
   useEffect(() => {
     if (!on || !url || (type !== 'hls' && type !== 'webrtc')) return
@@ -124,8 +134,8 @@ export function LivePlayer({ url, type, on, fill = false }: Props) {
   }, [url, type, on])
 
   const wrap = fill
-    ? 'w-full h-full bg-black overflow-hidden'
-    : 'glass-panel overflow-hidden aspect-video'
+    ? 'relative w-full h-full bg-black overflow-hidden'
+    : 'relative glass-panel overflow-hidden aspect-video'
 
   if (!on || !url) {
     return (
@@ -149,14 +159,26 @@ export function LivePlayer({ url, type, on, fill = false }: Props) {
           loading="lazy"
         />
       ) : (
-        <video
-          ref={videoRef}
-          className={fill ? 'w-full h-full bg-black object-cover' : 'w-full h-full bg-black'}
-          autoPlay
-          muted
-          playsInline
-          controls={!fill}
-        />
+        <>
+          <video
+            ref={videoRef}
+            className={fill ? 'w-full h-full bg-black object-cover' : 'w-full h-full bg-black'}
+            autoPlay
+            muted={muted}
+            playsInline
+            controls={!fill}
+          />
+          {fill && (
+            <button
+              onClick={toggleMute}
+              aria-label={muted ? 'Bật tiếng' : 'Tắt tiếng'}
+              className="absolute bottom-2 right-2 z-20 w-9 h-9 rounded-full flex items-center justify-center text-white text-base"
+              style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)' }}
+            >
+              {muted ? '🔇' : '🔊'}
+            </button>
+          )}
+        </>
       )}
     </div>
   )
