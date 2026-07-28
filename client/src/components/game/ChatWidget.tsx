@@ -50,7 +50,7 @@ export function ChatWidget({ isAdmin, currentUserId }: Props) {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.18 }}
             className="glass-panel mb-3 flex flex-col w-[86vw] max-w-[360px] h-[60vh] max-h-[460px] overflow-hidden"
-            style={{ background: 'rgba(18,17,12,0.96)' }}
+            style={{ background: 'rgba(18,17,12,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--glass-border)]">
