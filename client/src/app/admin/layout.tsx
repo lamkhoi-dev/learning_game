@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useStats } from '@/hooks/useStats'
+import { ChatWidget } from '@/components/game/ChatWidget'
 import api from '@/lib/api'
 
 const navItems = [
@@ -126,6 +127,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
       </main>
+
+      {ready && <ChatWidget isAdmin currentUserId={user?.id ?? ''} />}
     </div>
   )
 }
