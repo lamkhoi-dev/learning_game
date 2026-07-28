@@ -31,6 +31,22 @@ export default function GamePage() {
   const onlineStats = useStats()
 
   const isAdmin = user?.role === 'ADMIN'
+  const gameAreaRef = useRef<HTMLElement>(null)
+  const [chatMaxHeight, setChatMaxHeight] = useState<number | undefined>(undefined)
+
+  // Đo đúng ranh giới video/khu chơi để panel chat không bao giờ trùm lên video
+  useEffect(() => {
+    if (!settings.streamOn) { setChatMaxHeight(undefined); return }
+    function measure() {
+      const top = gameAreaRef.current?.getBoundingClientRect().top
+      if (top == null) return
+      const reserved = 84 // khoảng cách nút chat + lề dưới đáy màn hình
+      setChatMaxHeight(Math.max(160, window.innerHeight - top - reserved))
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [settings.streamOn])
 
   const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
   const [winVisible, setWinVisible] = useState(false)
@@ -318,7 +334,7 @@ export default function GamePage() {
             </section>
 
             {/* KHU CHƠI 2/5 (cuộn được) */}
-            <section className="flex-[2] min-h-0 overflow-y-auto">
+            <section ref={gameAreaRef} className="flex-[2] min-h-0 overflow-y-auto">
               {gameArea}
             </section>
           </>
@@ -330,7 +346,7 @@ export default function GamePage() {
       </div>
 
       {/* Chat dạng bong bóng nổi */}
-      <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} />
+      <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} compact={settings.streamOn} maxPanelHeight={chatMaxHeight} />
     </div>
   )
 }

@@ -6,6 +6,8 @@ import { useChat } from '@/hooks/useChat'
 interface Props {
   isAdmin: boolean
   currentUserId: string
+  compact?: boolean // true khi đang có video live phía trên — giới hạn chiều cao để không trùm lên video
+  maxPanelHeight?: number // chiều cao tối đa đo chính xác (px) — ưu tiên hơn class mặc định khi có
 }
 
 function nameColor(name: string): string {
@@ -18,7 +20,7 @@ function fmt(iso: string): string {
   try { return new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) } catch { return '' }
 }
 
-export function ChatWidget({ isAdmin, currentUserId }: Props) {
+export function ChatWidget({ isAdmin, currentUserId, compact = false, maxPanelHeight }: Props) {
   const { messages, send, remove, error } = useChat()
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
@@ -49,8 +51,11 @@ export function ChatWidget({ isAdmin, currentUserId }: Props) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.18 }}
-            className="glass-panel mb-3 flex flex-col w-[86vw] max-w-[360px] h-[60vh] max-h-[460px] overflow-hidden"
-            style={{ background: 'rgba(18,17,12,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+            className={`glass-panel mb-3 flex flex-col w-[86vw] max-w-[360px] overflow-hidden ${compact ? 'h-[38vh] max-h-[300px]' : 'h-[60vh] max-h-[460px]'}`}
+            style={{
+              background: 'rgba(18,17,12,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              ...(maxPanelHeight ? { height: maxPanelHeight, maxHeight: maxPanelHeight } : {}),
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--glass-border)]">
