@@ -51,7 +51,7 @@ export function ChatWidget({ isAdmin, currentUserId, compact = false, maxPanelHe
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.18 }}
-            className={`glass-panel flex flex-col w-[94vw] max-w-[420px] overflow-hidden ${compact ? 'h-[38vh] max-h-[300px]' : 'h-[60vh] max-h-[460px]'}`}
+            className={`glass-panel mb-3 flex flex-col w-[86vw] max-w-[360px] overflow-hidden ${compact ? 'h-[38vh] max-h-[300px]' : 'h-[60vh] max-h-[460px]'}`}
             style={{
               background: 'rgba(18,17,12,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               ...(maxPanelHeight ? { height: maxPanelHeight, maxHeight: maxPanelHeight } : {}),
@@ -101,22 +101,20 @@ export function ChatWidget({ isAdmin, currentUserId, compact = false, maxPanelHe
         )}
       </AnimatePresence>
 
-      {/* Bubble — ẩn khi panel đang mở (đã có nút ✕ trong panel), để panel dùng hết khoảng trống */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="relative ml-auto flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
-          style={{ background: 'var(--gold)', boxShadow: '0 0 20px rgba(255,210,74,0.45)' }}
-          aria-label="Chat"
-        >
-          <span className="text-2xl">💬</span>
-          {unread > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[var(--crimson-xenon)] text-white text-[11px] font-bold flex items-center justify-center">
-              {unread > 99 ? '99+' : unread}
-            </span>
-          )}
-        </button>
-      )}
+      {/* Bubble */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="relative ml-auto flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+        style={{ background: 'var(--gold)', boxShadow: '0 0 20px rgba(255,210,74,0.45)' }}
+        aria-label="Chat"
+      >
+        <span className="text-2xl">💬</span>
+        {!open && unread > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[var(--crimson-xenon)] text-white text-[11px] font-bold flex items-center justify-center">
+            {unread > 99 ? '99+' : unread}
+          </span>
+        )}
+      </button>
     </div>
   )
 }

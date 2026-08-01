@@ -58,7 +58,7 @@ export default function GamePage() {
     function measure() {
       const top = gameAreaRef.current?.getBoundingClientRect().top
       if (top == null) return
-      const reserved = 24 // lề dưới đáy màn hình (bong bóng chat tự ẩn khi panel mở nên không cần chừa chỗ)
+      const reserved = 84 // khoảng cách nút chat + lề dưới đáy màn hình
       setChatMaxHeight(Math.max(160, window.innerHeight - top - reserved))
     }
     measure()
