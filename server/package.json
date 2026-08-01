@@ -1,6 +1,7 @@
 {
   "name": "void-protocol-server",
   "version": "1.0.0",
+  "author": "Tiến Thành",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",

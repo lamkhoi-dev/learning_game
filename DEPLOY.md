@@ -9,7 +9,7 @@ Backend là cổng vào duy nhất (port 80) — nó phục vụ giao diện, AP
 
 ### 1. Đẩy code lên GitHub (làm ở máy bạn)
 ```bash
-cd /Users/an/Workspace/Game
+cd /path/to/project
 git init
 git add .
 git commit -m "Initial"
@@ -21,7 +21,7 @@ git push -u origin main
 
 ### 2. SSH vào VPS
 ```bash
-ssh -p 24700 root@162.4.176.46
+ssh -p <PORT> root@<VPS-IP>
 ```
 
 ### 3. Cài Docker (Ubuntu/Debian)
@@ -46,20 +46,20 @@ nano .env
 Điền:
 - `POSTGRES_PASSWORD`: mật khẩu DB mạnh
 - `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`: tạo bằng `openssl rand -base64 48`
-- `PUBLIC_URL=http://162.4.176.46`
+- `PUBLIC_URL=https://<domain-của-bạn>`
 - `COOKIE_SECURE=false` (vì đang chạy HTTP)
 
 ### 6. Mở firewall cổng 80 (nếu có ufw)
 ```bash
 ufw allow 80/tcp
-ufw allow 24700/tcp   # giữ SSH
+ufw allow <PORT>/tcp   # giữ SSH
 ```
 
 ### 7. Chạy
 ```bash
 docker compose up -d --build
 ```
-Lần đầu build ~vài phút. Sau đó vào: **http://162.4.176.46**
+Lần đầu build ~vài phút. Sau đó vào domain đã cấu hình
 
 Tài khoản admin mặc định: `void_admin` / `Admin@1234` (đổi ngay — xem mục E).
 
@@ -102,7 +102,7 @@ cat backup.sql | docker compose exec -T db psql -U void_user voidprotocol
 ---
 
 ## E. Bảo mật (làm sớm)
-1. **Đổi mật khẩu root VPS** (bạn đã lộ trong chat) — bấm "Reset mật khẩu" trên trang quản trị.
+1. **Đổi mật khẩu root VPS** — bấm "Reset mật khẩu" trên trang quản trị.
 2. **Đổi mật khẩu admin game**: hiện chưa có UI đổi mật khẩu. Tạm thời đổi qua DB:
    ```bash
    # sinh hash mới rồi update — hoặc nhờ thêm tính năng đổi mật khẩu
@@ -113,6 +113,5 @@ cat backup.sql | docker compose exec -T db psql -U void_user voidprotocol
 ---
 
 ## F. Lên HTTPS + domain (khi sẵn sàng — nên làm cho game public)
-Trỏ domain về `162.4.176.46`, rồi thêm Caddy (tự cấp SSL miễn phí). Báo mình, mình thêm
-`caddy` vào docker-compose + đổi `PUBLIC_URL=https://...` và `COOKIE_SECURE=true`.
-Khi đó WebSocket thành `wss://` an toàn, cookie bảo mật chuẩn.
+Đã cấu hình xong: Caddy tự cấp SSL (Let's Encrypt) theo domain trỏ về VPS,
+`PUBLIC_URL=https://...` và `COOKIE_SECURE=true`, WebSocket chạy `wss://` an toàn.
