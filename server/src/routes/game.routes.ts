@@ -4,7 +4,7 @@ import { AuthRequest } from '../types'
 import { getCurrentRound, getRounds } from '../services/round.service'
 import { getUserBetForRound } from '../services/bet.service'
 import { prisma } from '../lib/prisma'
-import { getOnlineCount, getTotalBettors } from '../socket'
+import { getOnlineCount, getOnlineUsernames, getTotalBettors } from '../socket'
 
 const router = Router()
 
@@ -13,6 +13,11 @@ router.use(authMiddleware)
 // Thống kê chung: online + tổng số người đã đặt
 router.get('/stats', async (_req, res: Response): Promise<void> => {
   res.json({ online: getOnlineCount(), totalBettors: await getTotalBettors() })
+})
+
+// Danh sách tên người đang online (bấm vào số online để xem)
+router.get('/online-users', async (_req, res: Response): Promise<void> => {
+  res.json({ usernames: getOnlineUsernames() })
 })
 
 // Toàn bộ lệnh cược của 1 ván (user xem được — tên, chíp, giờ; betId để hủy)

@@ -12,6 +12,7 @@ import { BetPanel } from '@/components/game/BetPanel'
 import { TwoColumnFeed } from '@/components/game/TwoColumnFeed'
 import { LivePlayer } from '@/components/game/LivePlayer'
 import { ChatWidget } from '@/components/game/ChatWidget'
+import { OnlineUsersModal } from '@/components/game/OnlineUsersModal'
 import { WinOverlay } from '@/components/game/WinOverlay'
 import { LoseOverlay } from '@/components/game/LoseOverlay'
 import { CountdownOverlay } from '@/components/game/CountdownOverlay'
@@ -31,6 +32,23 @@ export default function GamePage() {
   const onlineStats = useStats()
 
   const isAdmin = user?.role === 'ADMIN'
+  const [onlineListOpen, setOnlineListOpen] = useState(false)
+  const [onlineNames, setOnlineNames] = useState<string[]>([])
+  const [onlineLoading, setOnlineLoading] = useState(false)
+
+  async function openOnlineList() {
+    setOnlineListOpen(true)
+    setOnlineLoading(true)
+    try {
+      const { data } = await api.get('/api/game/online-users')
+      setOnlineNames(data.usernames ?? [])
+    } catch {
+      setOnlineNames([])
+    } finally {
+      setOnlineLoading(false)
+    }
+  }
+
   const gameAreaRef = useRef<HTMLElement>(null)
   const [chatMaxHeight, setChatMaxHeight] = useState<number | undefined>(undefined)
 
@@ -40,7 +58,7 @@ export default function GamePage() {
     function measure() {
       const top = gameAreaRef.current?.getBoundingClientRect().top
       if (top == null) return
-      const reserved = 84 // khoảng cách nút chat + lề dưới đáy màn hình
+      const reserved = 24 // lề dưới đáy màn hình (bong bóng chat tự ẩn khi panel mở nên không cần chừa chỗ)
       setChatMaxHeight(Math.max(160, window.innerHeight - top - reserved))
     }
     measure()
@@ -208,9 +226,9 @@ export default function GamePage() {
           <span className="text-[var(--text-muted)]">KQ <span className="font-black text-base align-middle" style={{ color: resultColor }}>{lastResult ? displayChoice(lastResult) : '—'}</span></span>
         </div>
         <div className="flex items-center gap-3 text-[11px] font-orbitron w-full sm:w-auto">
-          <span className="flex items-center gap-1 text-[var(--text-muted)]">
+          <button onClick={openOnlineList} className="flex items-center gap-1 text-[var(--text-muted)] hover:text-[#22c55e] transition-colors">
             <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" /><span className="text-[#22c55e] font-bold">{onlineStats.online}</span> online
-          </span>
+          </button>
           <span className="text-[var(--text-muted)]">🎯 <span className="neon-text-gold font-bold">{onlineStats.totalBettors}</span> đã đặt</span>
         </div>
       </div>
@@ -326,10 +344,10 @@ export default function GamePage() {
                   style={{ background: 'rgba(0,0,0,0.45)', color: round?.paused ? 'var(--crimson-xenon)' : 'var(--gold)', backdropFilter: 'blur(3px)' }}>
                   {statusText} · ×{round?.coefficient ?? '—'}
                 </span>
-                <span className="font-orbitron text-[11px] px-2.5 py-1 rounded-full flex items-center gap-1"
+                <button onClick={openOnlineList} className="pointer-events-auto font-orbitron text-[11px] px-2.5 py-1 rounded-full flex items-center gap-1"
                   style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', backdropFilter: 'blur(3px)' }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />{onlineStats.online}
-                </span>
+                </button>
               </div>
             </section>
 
@@ -347,6 +365,13 @@ export default function GamePage() {
 
       {/* Chat dạng bong bóng nổi */}
       <ChatWidget isAdmin={isAdmin} currentUserId={user?.id ?? ''} compact={settings.streamOn} maxPanelHeight={chatMaxHeight} />
+
+      <OnlineUsersModal
+        visible={onlineListOpen}
+        loading={onlineLoading}
+        usernames={onlineNames}
+        onClose={() => setOnlineListOpen(false)}
+      />
     </div>
   )
 }

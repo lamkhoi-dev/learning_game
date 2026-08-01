@@ -41,7 +41,9 @@ export function pushChat(username: string, text: string, userId = ''): void {
 
 // Đếm user online (mỗi userId có thể mở nhiều tab → đếm số kết nối)
 const onlineUsers = new Map<string, number>()
+const onlineUsernames = new Map<string, string>() // userId -> username, để hiện danh sách khi bấm vào số online
 export function getOnlineCount(): number { return onlineUsers.size }
+export function getOnlineUsernames(): string[] { return Array.from(onlineUsernames.values()) }
 
 export async function getTotalBettors(): Promise<number> {
   const rows = await prisma.bet.findMany({ distinct: ['userId'], select: { userId: true } })
@@ -88,6 +90,10 @@ export function initSocket(httpServer: HttpServer): Server {
 
     // Online tracking
     onlineUsers.set(userId, (onlineUsers.get(userId) ?? 0) + 1)
+    if (!onlineUsernames.has(userId)) {
+      const u = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } })
+      if (u) onlineUsernames.set(userId, u.username)
+    }
     void emitStats()
 
     // Gửi lịch sử chat gần đây cho người vừa vào
@@ -164,7 +170,7 @@ export function initSocket(httpServer: HttpServer): Server {
 
     socket.on('disconnect', () => {
       const n = (onlineUsers.get(userId) ?? 1) - 1
-      if (n <= 0) onlineUsers.delete(userId)
+      if (n <= 0) { onlineUsers.delete(userId); onlineUsernames.delete(userId) }
       else onlineUsers.set(userId, n)
       void emitStats()
     })
