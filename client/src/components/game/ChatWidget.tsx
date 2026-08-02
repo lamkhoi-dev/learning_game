@@ -69,8 +69,15 @@ export function ChatWidget({ isAdmin, currentUserId, compact = false, maxPanelHe
                 <p className="text-xs text-[var(--text-muted)] text-center py-6">Chưa có tin nhắn — chat ngay!</p>
               )}
               {messages.map((m) => (
-                <div key={m.id} className="group text-sm leading-snug break-words">
-                  <span className="font-orbitron text-xs" style={{ color: nameColor(m.username) }}>{m.username}</span>
+                <div
+                  key={m.id}
+                  className="group text-sm leading-snug break-words"
+                  style={m.isAdmin ? { background: 'rgba(255,210,74,0.08)', borderRadius: 8, padding: '4px 6px', margin: '-4px -6px' } : undefined}
+                >
+                  <span className="font-orbitron text-xs font-bold" style={{ color: m.isAdmin ? 'var(--gold)' : nameColor(m.username) }}>{m.username}</span>
+                  {m.isAdmin && (
+                    <span className="font-orbitron text-[9px] font-bold ml-1.5 px-1.5 py-0.5 rounded-full" style={{ background: 'var(--gold)', color: '#000' }}>ADMIN</span>
+                  )}
                   <span className="text-[10px] text-[var(--text-muted)] ml-1.5">{fmt(m.createdAt)}</span>
                   {isAdmin && (
                     <button
@@ -78,7 +85,7 @@ export function ChatWidget({ isAdmin, currentUserId, compact = false, maxPanelHe
                       className="opacity-0 group-hover:opacity-100 text-[10px] text-[var(--crimson-xenon)] ml-2 transition-opacity"
                     >xóa</button>
                   )}
-                  <div className="text-[var(--text-primary)]" style={{ color: m.userId === currentUserId ? 'var(--gold)' : undefined }}>
+                  <div className="text-[var(--text-primary)]" style={{ color: m.isAdmin ? 'var(--gold)' : m.userId === currentUserId ? 'var(--gold)' : undefined }}>
                     {m.text}
                   </div>
                 </div>

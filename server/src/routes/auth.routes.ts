@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
-import { register, login } from '../services/auth.service'
+import { register, login, changePassword } from '../services/auth.service'
 import { verifyRefreshToken, signAccessToken } from '../lib/jwt'
 import { prisma } from '../lib/prisma'
 import { authMiddleware } from '../middleware/auth.middleware'
@@ -17,6 +17,11 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   identifier: z.string().min(1),
   password: z.string().min(1),
+})
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(6),
 })
 
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -103,6 +108,21 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response): Promi
     res.json({ ...user, energy: user.energy.toString() })
   } catch {
     res.status(500).json({ error: 'Failed to fetch user' })
+  }
+})
+
+router.put('/change-password', authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
+  const parsed = changePasswordSchema.safeParse(req.body)
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.errors[0].message })
+    return
+  }
+  try {
+    await changePassword(req.user!.userId, parsed.data.currentPassword, parsed.data.newPassword)
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Đổi mật khẩu thất bại'
+    res.status(400).json({ error: message })
   }
 })
 

@@ -103,11 +103,7 @@ cat backup.sql | docker compose exec -T db psql -U void_user voidprotocol
 
 ## E. Bảo mật (làm sớm)
 1. **Đổi mật khẩu root VPS** — bấm "Reset mật khẩu" trên trang quản trị.
-2. **Đổi mật khẩu admin game**: hiện chưa có UI đổi mật khẩu. Tạm thời đổi qua DB:
-   ```bash
-   # sinh hash mới rồi update — hoặc nhờ thêm tính năng đổi mật khẩu
-   ```
-   (Báo mình nếu muốn thêm chức năng "đổi mật khẩu admin" trong giao diện.)
+2. **Đổi mật khẩu admin game**: vào Admin → Cài đặt → mục "ĐỔI MẬT KHẨU".
 3. Khuyến nghị dùng **SSH key** thay mật khẩu.
 
 ---

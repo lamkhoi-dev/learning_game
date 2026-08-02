@@ -8,6 +8,7 @@ export interface ChatMsg {
   username: string
   text: string
   createdAt: string
+  isAdmin: boolean
 }
 
 export function useChat() {

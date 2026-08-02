@@ -11,6 +11,12 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [pwLoading, setPwLoading] = useState(false)
+  const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null)
+
   useEffect(() => {
     api.get('/api/admin/settings')
       .then(({ data }) => {
@@ -41,6 +47,28 @@ export default function SettingsPage() {
       flash((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Thất bại', false)
     } finally {
       setLoading(false)
+    }
+  }
+
+  function flashPw(text: string, ok = true) {
+    setPwMsg({ text, ok })
+    setTimeout(() => setPwMsg(null), 4000)
+  }
+
+  async function submitChangePassword() {
+    if (newPassword.length < 6) { flashPw('Mật khẩu mới phải từ 6 ký tự', false); return }
+    if (newPassword !== confirmPassword) { flashPw('Mật khẩu xác nhận không khớp', false); return }
+    setPwLoading(true)
+    try {
+      await api.put('/api/auth/change-password', { currentPassword, newPassword })
+      flashPw('Đã đổi mật khẩu thành công')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err: unknown) {
+      flashPw((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Thất bại', false)
+    } finally {
+      setPwLoading(false)
     }
   }
 
@@ -138,6 +166,65 @@ export default function SettingsPage() {
       >
         {loading ? '...' : 'LƯU CÀI ĐẶT'}
       </button>
+
+      {/* Đổi mật khẩu */}
+      <div className="glass-panel p-6 space-y-4">
+        <span className="font-orbitron text-sm text-[var(--text-primary)] tracking-widest">ĐỔI MẬT KHẨU</span>
+
+        <AnimatePresence>
+          {pwMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="font-orbitron text-xs px-4 py-3 rounded-lg"
+              style={{
+                color: pwMsg.ok ? 'var(--gold)' : 'var(--crimson-xenon)',
+                background: pwMsg.ok ? 'rgba(255,210,74,0.08)' : 'rgba(255,23,68,0.08)',
+                border: `1px solid ${pwMsg.ok ? 'rgba(255,210,74,0.25)' : 'rgba(255,23,68,0.2)'}`,
+              }}
+            >
+              {pwMsg.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div>
+          <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">Mật khẩu hiện tại</label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="w-full bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)] transition-colors"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">Mật khẩu mới</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)] transition-colors"
+          />
+          <p className="text-[10px] text-[var(--text-muted)] mt-1.5">Tối thiểu 6 ký tự.</p>
+        </div>
+        <div>
+          <label className="block text-xs text-[var(--text-muted)] mb-1.5 tracking-widest font-orbitron uppercase">Xác nhận mật khẩu mới</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)] transition-colors"
+          />
+        </div>
+
+        <button
+          onClick={submitChangePassword}
+          disabled={pwLoading || !currentPassword || !newPassword || !confirmPassword}
+          className="font-orbitron text-xs px-6 py-2.5 rounded-lg text-black tracking-widest disabled:opacity-40 transition-all"
+          style={{ background: 'var(--gold)', boxShadow: '0 0 16px rgba(255,210,74,0.3)' }}
+        >
+          {pwLoading ? '...' : 'ĐỔI MẬT KHẨU'}
+        </button>
+      </div>
     </div>
   )
 }

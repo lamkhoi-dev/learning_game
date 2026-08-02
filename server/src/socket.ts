@@ -27,13 +27,13 @@ export function broadcastNewBet(bet: CreatedBet): void {
 }
 
 // ── Chat trực tiếp (tạm thời, giữ trong RAM ~50 tin gần nhất) ──
-interface ChatMsg { id: string; userId: string; username: string; text: string; createdAt: string }
+interface ChatMsg { id: string; userId: string; username: string; text: string; createdAt: string; isAdmin: boolean }
 const chatBuffer: ChatMsg[] = []
 const CHAT_MAX = 50
 const lastChatAt = new Map<string, number>()
 
-export function pushChat(username: string, text: string, userId = ''): void {
-  const msg: ChatMsg = { id: randomUUID(), userId, username, text, createdAt: new Date().toISOString() }
+export function pushChat(username: string, text: string, userId = '', isAdmin = false): void {
+  const msg: ChatMsg = { id: randomUUID(), userId, username, text, createdAt: new Date().toISOString(), isAdmin }
   chatBuffer.push(msg)
   if (chatBuffer.length > CHAT_MAX) chatBuffer.shift()
   io?.emit('chat:message', msg)
@@ -107,12 +107,13 @@ export function initSocket(httpServer: HttpServer): Server {
         if (now - (lastChatAt.get(userId) ?? 0) < 1500) {
           socket.emit('chat:error', { error: 'Gửi chậm lại một chút' }); return
         }
-        const user = await prisma.user.findUnique({ where: { id: userId }, select: { status: true, username: true } })
-        if (!user || user.status !== 'ACTIVE') {
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { status: true, username: true, role: true } })
+        const isAdmin = user?.role === 'ADMIN'
+        if (!user || (!isAdmin && user.status !== 'ACTIVE')) {
           socket.emit('chat:error', { error: 'Tài khoản chưa được duyệt' }); return
         }
         lastChatAt.set(userId, now)
-        pushChat(user.username, t.slice(0, 200), userId)
+        pushChat(user.username, t.slice(0, 200), userId, isAdmin)
       } catch { /* bỏ qua */ }
     })
 
