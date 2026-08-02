@@ -52,14 +52,16 @@ export default function GamePage() {
   const gameAreaRef = useRef<HTMLElement>(null)
   const [chatMaxHeight, setChatMaxHeight] = useState<number | undefined>(undefined)
 
-  // Đo đúng ranh giới video/khu chơi để panel chat không bao giờ trùm lên video
+  // Đo ranh giới video/khu chơi để tính chiều cao panel chat — cho phép tràn lên đè
+  // một phần video (kiểu TikTok live) thay vì dừng khít mép video
   useEffect(() => {
     if (!settings.streamOn) { setChatMaxHeight(undefined); return }
     function measure() {
       const top = gameAreaRef.current?.getBoundingClientRect().top
       if (top == null) return
+      const overlapIntoVideo = window.innerHeight * 0.14 // tràn lên đè video một chút
       const reserved = 84 // khoảng cách nút chat + lề dưới đáy màn hình
-      setChatMaxHeight(Math.max(160, window.innerHeight - top - reserved))
+      setChatMaxHeight(Math.max(160, window.innerHeight - (top - overlapIntoVideo) - reserved))
     }
     measure()
     window.addEventListener('resize', measure)
