@@ -59,7 +59,7 @@ export default function GamePage() {
     function measure() {
       const top = gameAreaRef.current?.getBoundingClientRect().top
       if (top == null) return
-      const overlapIntoVideo = window.innerHeight * 0.15 // tràn lên đè video một chút
+      const overlapIntoVideo = 0 // không tràn lên video nữa
       const reserved = 84 // khoảng cách nút chat + lề dưới đáy màn hình
       setChatMaxHeight(Math.max(160, window.innerHeight - (top - overlapIntoVideo) - reserved))
     }
