@@ -37,7 +37,7 @@ function Column({ side, color, ...rest }: Props & EditCtx & { side: Choice; colo
     canEdit, savingId, editId, editVal, setEditVal, startEdit, cancelEdit, submitEdit } = rest
   const sideBets = bets.filter(b => b.choice === side)
   const total = sideBets.reduce((s, b) => s + Number(b.amount), 0)
-  const symbol = side === 'T' ? 'A' : 'B'
+  const symbol = side === 'T' ? '₮' : 'Ӿ'
 
   return (
     <div className="flex-1 min-w-0 flex flex-col rounded-xl border" style={{ borderColor: `${color}40`, background: `${color}08` }}>

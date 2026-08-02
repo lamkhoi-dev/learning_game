@@ -58,6 +58,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="flex items-center justify-between px-6 py-3 border-b border-[var(--glass-border)]">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.jpg" alt="logo" className="h-9 w-auto rounded-md" />
             <span className="font-orbitron text-sm font-black neon-text-gold tracking-widest">ADMIN</span>
           </div>
           <nav className="hidden sm:flex items-center gap-1">

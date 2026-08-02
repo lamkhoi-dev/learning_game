@@ -42,9 +42,10 @@ export default function LoginPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        {/* Thương hiệu */}
+        {/* Logo */}
         <div className="text-center mb-10">
-          <h1 className="font-orbitron text-3xl font-black neon-text-gold tracking-widest">{brandName}</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.jpg" alt={brandName} className="mx-auto w-64 max-w-full h-auto rounded-2xl" />
           <p className="text-[var(--text-muted)] text-sm mt-3 tracking-wider">
             CHOOSE YOUR SIDE
           </p>

@@ -35,7 +35,7 @@ export default function RoundsPage() {
   useEffect(() => { fetchRound() }, [])
 
   async function cancelBet(bet: RoundBet) {
-    const sym = bet.choice === 'T' ? 'A' : 'B'
+    const sym = bet.choice === 'T' ? '₮' : 'Ӿ'
     if (!confirm(`Hủy lệnh ${sym} của ${bet.username} (${Number(bet.amount).toLocaleString('vi-VN')} chíp)? Chíp sẽ được hoàn lại.`)) return
     setCancellingBet(bet.betId)
     try {
@@ -141,7 +141,7 @@ export default function RoundsPage() {
     setLoading(true)
     try {
       await api.put(`/api/admin/rounds/${activeRound!.id}/lock-and-result`, { result })
-      flash(`Đã khoá! Kết quả ${result === 'T' ? 'A' : 'B'} hiện sau 5 giây — round mới sẽ tự tạo`)
+      flash(`Đã khoá! Kết quả ${result === 'T' ? '₮' : 'Ӿ'} hiện sau 5 giây — round mới sẽ tự tạo`)
     } catch (err: unknown) {
       flash((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Thất bại', false)
     } finally { setLoading(false) }
@@ -264,7 +264,7 @@ export default function RoundsPage() {
                   <span className="text-sm font-orbitron">
                     Xác nhận{' '}
                     <span style={{ color: pendingResult === 'T' ? 'var(--cyan-titan)' : 'var(--crimson-xenon)' }}>
-                      {pendingResult === 'T' ? 'A' : 'B'}
+                      {pendingResult === 'T' ? '₮' : 'Ӿ'}
                     </span>{' '}
                     thắng?
                   </span>

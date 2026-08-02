@@ -7,5 +7,5 @@ export function formatEnergy(val: string | number): string {
 }
 
 export function displayChoice(choice: 'T' | 'X'): string {
-  return choice === 'T' ? 'A' : 'B'
+  return choice === 'T' ? '₮' : 'Ӿ'
 }

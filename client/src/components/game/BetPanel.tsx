@@ -46,7 +46,7 @@ export function BetPanel({ roundId: _roundId, choice, userEnergy, disabled, onBe
   function setMax() { setAmount(userEnergy) }
 
   const choiceColor = choice === 'X' ? 'var(--crimson-xenon)' : choice === 'T' ? 'var(--cyan-titan)' : 'var(--gold)'
-  const sym = choice === 'T' ? 'A' : choice === 'X' ? 'B' : ''
+  const sym = choice === 'T' ? '₮' : choice === 'X' ? 'Ӿ' : ''
   const prefix = sym ? `${sym} ` : ''
 
   return (
@@ -91,7 +91,7 @@ export function BetPanel({ roundId: _roundId, choice, userEnergy, disabled, onBe
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder={choice ? 'Nhập số chíp...' : 'Chọn A hoặc B trước...'}
+            placeholder={choice ? 'Nhập số chíp...' : 'Chọn ₮ hoặc Ӿ trước...'}
             min={1}
             max={maxEnergy}
             disabled={disabled}

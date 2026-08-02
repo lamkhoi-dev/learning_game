@@ -126,7 +126,7 @@ export default function VirtualPage() {
             <label className="flex flex-col gap-1">Số bot
               <input type="number" value={sCount} onChange={(e) => setSCount(e.target.value)}
                 className="bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded px-2 py-1.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]" /></label>
-            <label className="flex flex-col gap-1">% vào A
+            <label className="flex flex-col gap-1">% vào ₮
               <input type="number" value={sRatioT} onChange={(e) => setSRatioT(e.target.value)}
                 className="bg-[rgba(255,255,255,0.05)] border border-[var(--glass-border)] rounded px-2 py-1.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]" /></label>
             <label className="flex flex-col gap-1">Chíp min
@@ -159,8 +159,8 @@ export default function VirtualPage() {
             <select value={b.botSide ?? 'RANDOM'} onChange={(e) => patch(b.id, { botSide: e.target.value })}
               className="bg-[rgba(255,255,255,0.06)] border border-[var(--glass-border)] rounded px-2 py-1 text-xs text-[var(--text-primary)] focus:outline-none">
               <option value="RANDOM">Ngẫu nhiên</option>
-              <option value="T">A</option>
-              <option value="X">B</option>
+              <option value="T">₮</option>
+              <option value="X">Ӿ</option>
             </select>
             <input type="number" value={b.botMin} onChange={(e) => patch(b.id, { botMin: parseInt(e.target.value) || 0 })}
               className="w-20 bg-[rgba(255,255,255,0.06)] border border-[var(--glass-border)] rounded px-2 py-1 text-xs text-[var(--text-primary)] focus:outline-none" placeholder="min" />
